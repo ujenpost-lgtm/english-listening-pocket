@@ -1,4 +1,4 @@
-const CACHE='english-pocket-v8-2-20261015';
+const CACHE='english-pocket-v9-0-20261015';
 const ASSETS=['./','./index.html','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(x=>x.startsWith('english-pocket-')||x.startsWith('english-listening-pocket-')).filter(x=>x!==CACHE).map(x=>caches.delete(x)))).then(()=>self.clients.claim())));
