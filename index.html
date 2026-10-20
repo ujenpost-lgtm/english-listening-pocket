@@ -143,13 +143,13 @@ body.reader-focus.rm-playing #r82Bar{bottom:calc(0px + env(safe-area-inset-botto
 </style><style id="p11Style">
 .p11panel{border:1px solid var(--line,#345);border-radius:16px;padding:15px;margin:15px 0;background:var(--panel,#14283a)}.p11panel h3{margin:0 0 10px}.p11cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.p11row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:9px 0}.p11small{font-size:.86rem;opacity:.84}.p11pill{border-radius:999px;padding:5px 9px;background:#2a4d51;color:#d4fff0}.p11panel input,.p11panel textarea,.p11panel select{min-width:0;max-width:100%;box-sizing:border-box}.p11answer{padding:14px;border-radius:12px;background:#22413c;margin:8px 0;overflow-wrap:anywhere}.p11hide{display:none!important}.p11bad{color:#ffb9b2}.p11good{color:#80dfbc}.p11focus:focus-visible{outline:3px solid #77e5d2}
 </style><style id="real-leaf-v111">
-/* A layered paper-sheet curl. This overrides the earlier flat page rotation. */
+/* Paper Flip 11.2: responsive segmented curl with stronger edge lighting. */
 body.reader-focus #readText{perspective:1400px}
 #paperTurnStage{position:fixed;pointer-events:none;z-index:1032;overflow:hidden;perspective:1400px;transform-style:preserve-3d;isolation:isolate;border-radius:2px}
-.paper-turn-strip{position:absolute;top:0;bottom:0;overflow:hidden;transform-style:preserve-3d;backface-visibility:visible;will-change:transform,filter;box-shadow:0 0 1px #0002}
+.paper-turn-strip{position:absolute;top:0;bottom:0;overflow:hidden;transform-style:preserve-3d;backface-visibility:visible;will-change:transform,filter;box-shadow:inset -1px 0 2px #0002}
 .paper-turn-strip .paper-turn-image{position:absolute;top:0;overflow:hidden;max-width:none!important;pointer-events:none!important;scrollbar-width:none!important;scroll-behavior:auto!important;margin:0!important;border-radius:0!important;transform:none!important}
 .paper-turn-strip .paper-turn-image::-webkit-scrollbar{display:none}
-.paper-turn-strip::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.34),transparent 42%,rgba(255,255,255,.43) 76%,rgba(0,0,0,.15));opacity:var(--shade,0);pointer-events:none}
+.paper-turn-strip::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,.48),transparent 28%,rgba(255,255,255,.65) 68%,rgba(0,0,0,.27));opacity:var(--shade,0);pointer-events:none}
 #paperTurnStage::after{content:"";pointer-events:none;position:absolute;inset:0;background:linear-gradient(90deg,transparent 48%,#251d1b44);opacity:var(--shadow,0)}
 #paperTurnStage[data-direction="prev"]::after{background:linear-gradient(270deg,transparent 48%,#251d1b44)}
 body.reader-focus #readText.paper-turn-under{filter:brightness(.93)}
@@ -159,7 +159,7 @@ body.reader-focus #readText.paper-turn-under{filter:brightness(.93)}
 <section class="section" id="books"><h2>📚 Моя бібліотека</h2><div class="panel"><h3>Імпорт книжки</h3><p class="hint">TXT, HTML, EPUB (текст без DRM; ZIP/Deflate підтримка залежить від Chrome). Файли зберігаються лише на цьому пристрої. EPUB: порядок розділів за книжкою, назви з заголовків; ілюстрації та складне оформлення поки не підтримуються.</p><label for="bookFile" class="btn">＋ Додати книжку</label><input class="hidden" type="file" id="bookFile" accept=".txt,.html,.htm,.epub,text/plain,text/html,application/epub+zip"><p class="fine" id="importStatus"></p></div><div class="panel"><h3>Твоя полиця</h3><input id="shelfSearchV6" class="field pocket-search" type="search" placeholder="🔎 Знайти книжку за назвою" aria-label="Пошук книжок"><div id="shelf" class="empty">Поки немає книжок. Імпортуй свою першу TXT, HTML або EPUB.</div></div><div class="panel"><h3>Резервна копія бібліотеки</h3><p class="hint">Збережи книжки, плейлисти, слова та прогрес одним JSON-файлом. Копія може бути великою — залежно від розміру книжок.</p><div class="actions"><button class="btn secondary small" id="backupAll">⬇ Зберегти все</button><label class="btn secondary small" for="restoreAll">⬆ Відновити</label><input class="hidden" type="file" id="restoreAll" accept=".json,application/json"></div></div><div class="panel"><h3>Як читати з користю</h3><p class="hint">1. Читай короткими фрагментами 10–15 хв. 2. Виділяй незнайоме слово чи фразу. 3. Натисни «У словник» або «Перекласти». 4. Пізніше повтори її у вкладці «Слова».</p></div></section>
 <section class="section" id="read"><div class="resource-row"><h2>📖 Читалка</h2><button class="btn secondary small" id="goShelf">Мої книги</button></div><div class="panel" id="noBook"><p class="hint">Обери книжку у вкладці «Книги», щоб почати читати.</p><button class="btn" id="openLibrary">Відкрити бібліотеку</button></div><div id="readerBody" class="hidden"><div class="reader-v4-top" id="readerV4Top"><button class="btn secondary small" id="focusReader" type="button">⛶ Режим читання</button><strong id="focusBookTitle">Читалка</strong><button class="btn secondary small" id="readerCloseFocus" type="button" hidden>✕ Вийти</button></div><div class="reader-v4-modes" id="readerModes"><button type="button" class="btn secondary small active" id="tapWord">☝️ Слово</button><button type="button" class="btn secondary small" id="tapPhrase">✌️ Фраза</button><button type="button" class="btn secondary small" id="tapSentence">▤ Речення</button></div><div id="v7Controls" class="v7-tools"><button type="button" id="v7Instant" class="v7-chip active">🇺🇦 Автопереклад: увімкнено</button><button type="button" id="v7Highlights" class="v7-chip active">✓ Вивчені слова</button><button type="button" id="v7ReadSentence" class="v7-chip">🔊 Повторити речення</button></div><div class="p8-controls" id="p8Controls"><button type="button" id="p8Focus" class="btn secondary small">⛶ Екран</button><button type="button" id="p8Flip" class="btn secondary small">📖 Гортання: книга</button><button type="button" id="p8Find" class="btn secondary small">🔎 У тексті</button></div><div id="p8SearchBox" hidden class="p8-search"><input id="p8Query" type="search" class="field" placeholder="Слово або фраза в розділі" aria-label="Пошук у розділі"><button type="button" class="btn small" id="p8SearchGo">Знайти</button><button type="button" class="btn secondary small" id="p8SearchClose">✕</button><span id="p8SearchCount" class="hint"></span></div><div class="reader-tip" id="readerTip">Натисни на слово; для фрази вибери перше й останнє слово.</div><div class="panel"><div class="readhead" id="bookName"></div><div class="resource-row"><label class="fieldlabel" for="chapterSelect">Розділ</label><span id="readProgress" class="hint"></span></div><select id="chapterSelect" class="field"></select><div class="reader-toolbar" style="margin-top:12px"><button class="btn secondary small" id="smaller" aria-label="Зменшити шрифт">A−</button><button class="btn secondary small" id="bigger" aria-label="Збільшити шрифт">A＋</button><select id="readTheme" class="field" style="width:auto;min-height:36px;padding:7px"><option value="paper">📜 Сепія</option><option value="night">🌙 Темна</option><option value="white">☀️ Біла</option></select></div><p class="fine">Виділи слово або фразу пальцем — з'являться дії. Переклад у читалці потребує інтернету; озвучування — голосового рушія Android.</p></div><div class="floatbar" id="selectionBar" hidden><span id="selectedSnippet" class="fine" style="color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:35%"></span><button class="btn small" id="saveSelection">＋ Словник</button><button class="btn secondary small" id="speakSelection">🔊</button><button class="btn secondary small" id="translateSelection">🇺🇦</button></div><div class="translator" id="translationPanel" hidden><div class="hint" id="translationSource"></div><div class="result" id="translationResult">Перекладаю…</div><div class="actions"><button class="btn small" id="useTranslation">＋ Зберегти переклад</button><button class="btn secondary small" id="externalTranslation">Google ↗</button><button class="btn secondary small" id="closeTranslation">✕</button></div><div class="fine">Онлайн-переклад надсилає виділений текст зовнішньому сервісу. Не надсилай приватні тексти.</div></div><div class="panel"><div class="resource-row"><span class="hint" id="percentRead">0% книги</span><button class="btn secondary small" id="addBookmark">🔖 Закладка</button></div><div class="meter"><i id="readMeter"></i></div><details class="bookmarks"><summary>Мої закладки</summary><div id="bookmarksList"></div></details></div><article class="reading paper" id="readText" aria-label="Текст книжки"></article><div class="pagecontrols" id="pageControls"><button class="btn secondary" id="previousPage" type="button">← Сторінка</button><span class="pagestate" id="pageState">1 / 1</span><button class="btn" id="followingPage" type="button">Сторінка →</button></div><div class="actions" style="justify-content:space-between"><button class="btn secondary" id="prevChapter">← Назад</button><button class="btn" id="nextChapter">Далі →</button></div><div class="panel"><h3>💾 Прогрес читання</h3><p class="hint">Місце читання запам'ятовується на цьому пристрої. Якщо перевстановиш застосунок або очистиш дані Chrome, книжки та записи можуть зникнути — роби резервні копії словника.</p></div></div></section>
 <section class="section" id="words"><div class="p11panel" id="p11Training"><h3>🧠 Vocabulary Engine — активне пригадування</h3><p class="p11small">Без AI-підписки: завдання створюються з твоїх власних карток. Дублікати в тесті не повторюються.</p><div class="p11row"><select class="field" id="p11ExerciseMode"><option value="ua">Українська → англійська</option><option value="en">Англійська → українська</option><option value="cloze">Пропущена фраза в контексті</option></select><button class="btn small" id="p11NewCard">Наступна картка</button></div><div class="p11answer" id="p11Prompt" aria-live="polite">Додай кілька слів до словника.</div><textarea class="field" id="p11Response" rows="2" placeholder="Пригадай і введи відповідь..."></textarea><div class="p11row"><button class="btn secondary small" id="p11Reveal">Показати відповідь</button><button class="btn secondary small" id="p11Again">↻ Ще раз</button><button class="btn small" id="p11Good">✓ Пригадав</button></div><div class="p11small" id="p11Verdict"></div><div class="p11row"><button class="btn secondary small" id="p11UseShadow">🎙️ У Shadowing</button><button class="btn secondary small" id="p11UseCoach">✨ Запит до AI Coach</button></div><h3>📊 Прогрес повторень</h3><div id="p11VocabStats" class="p11small"></div><h3>🗣️ 60-Second Speaking</h3><p class="p11small">Теми A2+–B1, без оплати й автоматичної оцінки акценту.</p><div class="p11answer" id="p11Topic"></div><div class="p11row"><button class="btn secondary small" id="p11TopicNew">Інша тема</button><button class="btn small" id="p11StartTimer">Почати 60 секунд</button><button class="btn secondary small" id="p11StopTimer">Стоп</button></div><div class="p11small" id="p11Timer">Готовий говорити?</div></div><div class="p11panel" id="p11Vault"><h3>🛡️ Data Vault — повна копія</h3><p class="p11small">Усі книги з IndexedDB та налаштування Pocket. Перед відновленням буде перегляд вмісту й підтвердження. Експортована копія не синхронізується автоматично.</p><div class="p11row"><button class="btn small" id="p11Export">⬇ Експорт у JSON</button><label class="btn secondary small" for="p11Import">⬆ Обрати копію</label><input type="file" id="p11Import" hidden accept=".json,application/json"></div><div id="p11RestorePreview" class="p11small" aria-live="polite">Копію не вибрано.</div><button class="btn secondary small" id="p11Restore" disabled>Відновити після перевірки</button></div><div class="panel p10wrap" id="p10Learning"><h2>🎙️ Shadowing Studio</h2><p class="hint">Прослухай речення, повтори його вголос, запиши себе та порівняй. Запис локальний; не надсилається на сервер.</p><label class="fieldlabel" for="p10ShadowText">Фраза для повторення</label><textarea class="field" id="p10ShadowText" rows="3" placeholder="I came across an interesting story on my way home."></textarea><div class="actions"><button type="button" class="btn secondary small" id="p10FromWord">🧠 Із словника</button><button type="button" class="btn small" id="p10Speak">🔊 Прослухати</button><button type="button" class="btn small" id="p10Record">● Записати</button><button type="button" class="btn secondary small" id="p10Stop">■ Стоп</button></div><audio id="p10Audio" controls hidden style="width:100%"></audio><p class="hint" id="p10MicStatus">Потрібен дозвіл мікрофона. Працює через HTTPS, запис підтримується залежно від браузера.</p><h3>🧠 Smart Recall</h3><p class="hint">Активне пригадування: спершу віднови англійську фразу з українського значення.</p><div id="p10RecallBox" class="p10recall"></div><div class="actions"><button type="button" class="btn secondary small" id="p10NextRecall">Інша картка</button><button type="button" class="btn secondary small" id="p10RevealRecall">Показати відповідь</button><button type="button" class="btn small" id="p10KnownRecall">Пригадав ✓</button></div><h3>✨ AI English Coach</h3><p class="hint">Створює запит для ChatGPT з твоєю фразою. Без API-ключа в застосунку та без автоматичного надсилання приватних текстів.</p><textarea class="field" id="p10CoachText" rows="3" placeholder="Встав речення або фразу, яку хочеш розібрати"></textarea><div class="actions"><button class="btn secondary small" type="button" id="p10CoachWord">Із словника</button><button class="btn small" type="button" id="p10CopyCoach">📋 Скопіювати запит</button><a class="btn secondary small" href="https://chatgpt.com/" target="_blank" rel="noopener">Відкрити ChatGPT ↗</a></div><h3>🛡️ Резервна копія 10.0</h3><p class="hint">Повний експорт книг, словника, плейлистів і налаштувань; перед відновленням виконай резервне копіювання наявних даних.</p><div class="actions"><button class="btn secondary small" id="p10Backup" type="button">⬇ Повна копія 10.0</button><label class="btn secondary small" for="p10Restore">⬆ Відновити копію</label><input type="file" id="p10Restore" class="hidden" accept="application/json,.json"></div><p class="fine" id="p10BackupStatus"></p></div><h2>🧠 Мій словник</h2><div class="panel"><div class="resource-row"><div><h3>Збережені слова й фрази</h3><p class="hint" id="wordCount">0 записів</p></div><button class="btn secondary small" id="exportWords">Експорт JSON</button></div><div class="actions"><button class="btn secondary small" id="exportCsv">Експорт CSV</button><label class="btn secondary small" for="importWords">Імпорт JSON</label><input type="file" class="hidden" id="importWords" accept=".json,application/json"></div><form id="wordForm"><label class="fieldlabel" for="wordText">Слово або фраза</label><input class="field" id="wordText" maxlength="300" required placeholder="come across"><label class="fieldlabel" for="wordMeaning">Мій переклад / пояснення</label><input class="field" id="wordMeaning" maxlength="700" placeholder="натрапити випадково"><label class="fieldlabel" for="wordExample">Приклад (за бажанням)</label><textarea class="field" id="wordExample" rows="2" maxlength="1400" placeholder="I came across an interesting story."></textarea><div class="actions"><button class="btn" type="submit">Зберегти фразу</button><button class="btn secondary" id="translateWord" type="button">🌐 Перекласти</button></div></form></div><div class="panel"><div class="resource-row"><h3>Повторення</h3><button class="btn secondary small" id="shuffleWord">🔀 Інша картка</button></div><p id="reviewCount" class="hint">Картки на сьогодні: 0</p><div id="study" class="empty">Додай слова — тут з'являться картки для повторення.</div><hr class="sep"><input id="wordSearch" class="field" placeholder="Пошук у словнику"><div id="wordList"></div></div></section>
-<footer style="text-align:center;margin-top:22px" class="fine">English Pocket 11.1 · Дані зберігаються локально · Зовнішні аудіо/відео потребують мережі</footer></main><nav class="bottom" aria-label="Навігація"><button class="navbtn on" data-page="listen"><span>🎧</span>Слухати</button><button class="navbtn" data-page="books"><span>📚</span>Книги</button><button class="navbtn" data-page="read"><span>📖</span>Читати</button><button class="navbtn" data-page="words"><span>🧠</span>Слова</button></nav><div id="toast" class="toast" role="status"></div>
+<footer style="text-align:center;margin-top:22px" class="fine">English Pocket 11.3 · Дані зберігаються локально · Зовнішні аудіо/відео потребують мережі</footer></main><nav class="bottom" aria-label="Навігація"><button class="navbtn on" data-page="listen"><span>🎧</span>Слухати</button><button class="navbtn" data-page="books"><span>📚</span>Книги</button><button class="navbtn" data-page="read"><span>📖</span>Читати</button><button class="navbtn" data-page="words"><span>🧠</span>Слова</button></nav><div id="toast" class="toast" role="status"></div>
 <script>
 'use strict';
 const $=id=>document.getElementById(id), safe=(s)=>String(s||''), LS=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},save=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{notify('Не вдалося зберегти дані на пристрої')}};let tab='listen',mode='road',playlist=LS('elp-playlist-v2',[]),words=LS('elp-words-v2',[]),settings=LS('elp-reader-settings-v2',{font:19,theme:'paper'}),readId=LS('elp-last-book-v2',null),book=null,chapter=0,selectionText='';
@@ -446,7 +446,7 @@ get('p8Focus').textContent='⛶ На весь екран';
 <label for="r82Chapters">Розділ книжки</label><select id="r82Chapters"></select>
 <div class="r82row"><button id="r82Start">→ До Chapter 1</button><button id="r82Small">A−</button><button id="r82Big">A+</button></div>
 <div class="r82row"><button id="r82Theme">📜 Сепія</button><button id="r82Flip">📖 Анімація: увімк.</button></div>
-<div class="r82row"><button id="r82Exit">Вийти з читання</button></div><div style="opacity:.7;font-size:12px">Торкнися слова для автоматичного перекладу. Для фрази вибери початок і кінець. Кнопки перегортання — внизу.</div></div>
+<div class="r82row"><button id="p112Curl" type="button">📄 Вигин: виразний</button></div><div class="r82row"><button id="r82Exit">Вийти з читання</button></div><div style="opacity:.7;font-size:12px">Торкнися слова для автоматичного перекладу. Для фрази вибери початок і кінець. Кнопки перегортання — внизу.</div></div>
 <script id="pocket82script">(()=>{'use strict';
 const $82=id=>document.getElementById(id);const area=$82('readText'),menu=$82('r82Menu');let isTurning=false;
 function count(){const top=area.scrollTop,h=Math.max(1,area.clientHeight),max=Math.max(0,area.scrollHeight-h);const page=Math.min(Math.ceil(max/h)+1,Math.max(1,Math.round(top/h)+1));$82('r82Count').textContent=page+' / '+Math.max(1,Math.ceil(max/h)+1)}
@@ -603,7 +603,7 @@ function cleanup(){stage?.remove();stage=null;area.classList.remove('paper-turn-
 function mesh(dir){
  const rect=area.getBoundingClientRect(),w=rect.width,h=rect.height;
  if(w<100||h<100)return null;
- const n=6,s=document.createElement('div');s.id='paperTurnStage';s.dataset.direction=dir>0?'next':'prev';
+ const n=9,s=document.createElement('div');s.id='paperTurnStage';s.dataset.direction=dir>0?'next':'prev';
  Object.assign(s.style,{left:rect.left+'px',top:rect.top+'px',width:w+'px',height:h+'px'});
  const strips=[];
  for(let i=0;i<n;i++){
@@ -624,8 +624,14 @@ function paint(parts,dir,p){
   const local=Math.min(1,Math.max(0,(p-seq*.25)/.75));
   const angle=(dir>0?-1:1)*(local*125 + 16*Math.sin(local*Math.PI));
   // Each strip bends independently, creating an articulated page rather than one flat card.
-  cell.style.transform=`perspective(1400px) rotateY(${angle}deg) translateZ(${(Math.sin(local*Math.PI)*8).toFixed(1)}px)`;
-  cell.style.setProperty('--shade',String(.1+Math.sin(local*Math.PI)*.75));
+  const strong=localStorage.getItem('elp-p112-curl')!=='soft';
+  const curve=strong?1:0.58;
+  const arc=Math.sin(Math.PI*local);
+  // Translate each flexible ribbon around its own axis, keeping a visible curled silhouette.
+  const lift=arc*(strong?22:11);
+  const offset=(dir>0?-1:1)*arc*(strong?10:5);
+  cell.style.transform=`translate3d(${offset.toFixed(1)}px,0,${lift.toFixed(1)}px) rotateY(${(angle*curve).toFixed(1)}deg)`;
+  cell.style.setProperty('--shade',String(.18+Math.sin(local*Math.PI)*.8));
   cell.style.opacity=String(Math.max(0,1-Math.pow(local,5)));
  });
 }
@@ -657,6 +663,9 @@ for(const [id,dir] of [['r82Prev',-1],['r82Next',1],['previousPage',-1],['follow
 // Drag-to-curl: horizontal finger movement directly bends the segmented sheet.
 area.addEventListener('touchstart',e=>{
  if(e.touches.length!==1||turning||!book||!document.body.classList.contains('reader-focus')||!el('readerSheet').hidden)return;
+ // Never hijack native selection, translation, or a tap on an interactive element.
+ const target=e.target;
+ if(target.closest('button,a,input,select,textarea,[contenteditable=true]')||!el('translationPanel').hidden||!el('readerSheet').hidden)return;
  gesture={x:e.touches[0].clientX,y:e.touches[0].clientY,dir:0,parts:null,p:0};
 },{passive:true,capture:true});
 area.addEventListener('touchmove',e=>{
@@ -664,7 +673,8 @@ area.addEventListener('touchmove',e=>{
  const dx=e.touches[0].clientX-gesture.x,dy=e.touches[0].clientY-gesture.y;
  if(!gesture.dir){
   if(Math.abs(dy)>Math.abs(dx)*1.4&&Math.abs(dy)>18){gesture=null;return}
-  if(Math.abs(dx)<25||Math.abs(dx)<Math.abs(dy)*1.5)return;
+  if(window.getSelection()?.toString().trim()){gesture=null;return}
+  if(Math.abs(dx)<35||Math.abs(dx)<Math.abs(dy)*1.8)return;
   const dir=dx<0?1:-1;
   const boundary=dir>0?chapter>=book.chapters.length-1&&area.scrollTop+area.clientHeight>=area.scrollHeight-8:chapter===0&&area.scrollTop<=8;
   if(boundary){gesture=null;return}
@@ -681,7 +691,7 @@ area.addEventListener('touchend',e=>{
  if(!gesture)return;
  const g=gesture;gesture=null;if(!g.dir)return;
  e.preventDefault();e.stopImmediatePropagation();turning=true;
- if(g.p<.18){if(g.parts)animate(g.parts,g.dir,g.p,0,cleanup);else cleanup();return}
+ if(g.p<.24){if(g.parts)animate(g.parts,g.dir,g.p,0,cleanup);else cleanup();return}
  moveWithoutOldAnimation(g.dir);r5Page();
  if(g.parts){area.classList.add('paper-turn-under');animate(g.parts,g.dir,g.p,1,cleanup)}else cleanup();
 },{passive:false,capture:true});
@@ -689,4 +699,72 @@ area.addEventListener('touchcancel',()=>{gesture=null;cleanup()},{passive:true})
 // Dismiss any transient sheet before programmatic chapter switches.
 el('r82Chapters')?.addEventListener('change',cleanup,{capture:true});
 window.addEventListener('pagehide',cleanup);
+const curlButton=el('p112Curl');
+function updateCurl(){if(curlButton)curlButton.textContent=localStorage.getItem('elp-p112-curl')==='soft'?'📄 Вигин: делікатний':'📄 Вигин: виразний'}
+if(curlButton){curlButton.addEventListener('click',()=>{const soft=localStorage.getItem('elp-p112-curl')==='soft';localStorage.setItem('elp-p112-curl',soft?'strong':'soft');updateCurl()});updateCurl()}
+
+})();</script><style id="reader113style">
+/* Reader 11.3: selection gestures do not require a mode switch. */
+#readText .token{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+#readText .token.active-token{background:#82d9bd!important;color:#163c33!important;box-decoration-break:clone}
+body.reader-focus #r82Menu #r82Word,body.reader-focus #r82Menu #r82Phrase,body.reader-focus #r82Menu #r82Sentence{display:none!important}
+#r113Help{font-size:12px;line-height:1.45;opacity:.72;margin:7px 0}
+</style>
+<script id="reader113script">(()=>{'use strict';
+const area=document.getElementById('readText');if(!area)return;
+const menu=document.getElementById('r82Menu');
+if(menu){const note=document.createElement('div');note.id='r113Help';note.textContent='Слово — дотик · Речення — подвійний дотик · Фраза — потримай слово й проведи пальцем до останнього.';menu.append(note)}
+let pending=null,holdTimer=0,activated=false,lastTap=null,blockedClicksUntil=0,synthetic=false;
+const getToken=target=>target?.closest?.('.token');
+const at=(x,y)=>getToken(document.elementFromPoint(x,y));
+function clearTimer(){if(holdTimer){clearTimeout(holdTimer);holdTimer=0}}
+function reset(){clearTimer();pending=null;activated=false}
+function blockNative(e){if(synthetic)return;if(Date.now()<blockedClicksUntil&&e.isTrusted){e.preventDefault();e.stopImmediatePropagation()}}
+area.addEventListener('click',e=>{
+ if(synthetic)return;
+ if(Date.now()<blockedClicksUntil){blockNative(e);return}
+ const token=getToken(e.target);if(!token)return;
+ const idx=Number(token.dataset.idx),now=Date.now();
+ if(lastTap&&now-lastTap.time<360&&lastTap.index===idx){
+   lastTap=null;e.preventDefault();e.stopImmediatePropagation();
+   if(typeof r5ModeSet==='function')r5ModeSet('sentence');
+   synthetic=true;try{token.click()}finally{synthetic=false;r5ModeSet('word')}
+   blockedClicksUntil=Date.now()+200;
+ }else{lastTap={time:now,index:idx}}
+},true);
+function preview(){if(!pending||!activated)return;const a=Number(pending.start.dataset.idx),b=Number(pending.end.dataset.idx);if(!Number.isInteger(a)||!Number.isInteger(b))return;
+ const lo=Math.min(a,b),hi=Math.max(a,b);if(hi-lo>85)return;
+ r5Clear();for(let k=lo;k<=hi;k++)r5Tokens[k]?.element.classList.add('active-token');
+}
+function selectRange(first,last){
+ if(!first||!last)return;
+ const a=Number(first.dataset.idx),b=Number(last.dataset.idx);if(!Number.isInteger(a)||!Number.isInteger(b))return;
+ if(Math.abs(a-b)>85){notify('Для однієї фрази обери до 85 слів');r5Clear();return}
+ r5ModeSet('phrase');synthetic=true;
+ try{first.click();last.click()}finally{synthetic=false;r5ModeSet('word')}
+}
+// Capture on document BEFORE the paper-flip handlers on the reader.
+document.addEventListener('touchstart',e=>{
+ if(e.touches.length!==1||!area.contains(e.target))return;
+ if(e.target.closest('button,a,input,select,textarea'))return;
+ const tok=getToken(e.target);if(!tok||!document.getElementById('readerSheet').hidden)return;
+ reset();const t=e.touches[0];pending={start:tok,end:tok,x:t.clientX,y:t.clientY};
+ holdTimer=setTimeout(()=>{if(!pending)return;activated=true;preview();if(navigator.vibrate)try{navigator.vibrate(12)}catch(_){}},380);
+},{capture:true,passive:true});
+document.addEventListener('touchmove',e=>{
+ if(!pending||e.touches.length!==1)return;
+ const t=e.touches[0];
+ if(!activated){if(Math.hypot(t.clientX-pending.x,t.clientY-pending.y)>14)reset();return}
+ e.preventDefault();e.stopPropagation();
+ const token=at(t.clientX,t.clientY);if(token&&area.contains(token)){pending.end=token;preview()}
+},{capture:true,passive:false});
+document.addEventListener('touchend',e=>{
+ if(!pending)return;
+ const p=pending,wasActive=activated;reset();
+ if(wasActive){e.preventDefault();e.stopPropagation();blockedClicksUntil=Date.now()+650;selectRange(p.start,p.end)}
+},{capture:true,passive:false});
+document.addEventListener('touchcancel',()=>{reset();r5Clear()},{capture:true,passive:true});
+area.addEventListener('contextmenu',e=>{if(activated){e.preventDefault();e.stopImmediatePropagation()}},true);
+// A keyboard / desktop selection remains available via existing native mechanism.
+r5ModeSet('word');
 })();</script></body></html>
