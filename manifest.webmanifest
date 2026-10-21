@@ -1,35 +1,16 @@
 {
-  "name": "English Listening Pocket 11.3",
-  "short_name": "English Pocket",
-  "description": "Listening Pro, Reading Magic, Shadowing, Smart Review та AI Coach",
-  "lang": "uk",
+  "id": "./",
+  "name": "English Reader — B1 to B2",
+  "short_name": "English Reader",
+  "description": "EPUB читання, словник, повторення SRS та вправи",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#091522",
-  "theme_color": "#102a43",
+  "background_color": "#f6f8f7",
+  "theme_color": "#147d63",
+  "lang": "uk",
   "icons": [
-    {
-      "src": "icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "share_target": {
-    "action": "./",
-    "method": "GET",
-    "enctype": "application/x-www-form-urlencoded",
-    "params": {
-      "title": "title",
-      "text": "text",
-      "url": "url"
-    }
-  }
+    {"src":"./icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
+    {"src":"./icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+  ]
 }
