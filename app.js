@@ -1,7 +1,7 @@
 /* English Pocket 13.0: one reader, one card store, one video catalog. No AI / translation API. */
 'use strict';
 const $=id=>document.getElementById(id);
-const K={words:'elp-words-v2',reader:'elp-reader-settings-v2',lastBook:'elp-last-book-v2',daily:'elp-13-daily',videos:'elp-13-videos',reviewConfig:'elp-14-review-config',practiceLog:'elp-14-practice-log'};
+const K={words:'elp-words-v2',reader:'elp-reader-settings-v2',lastBook:'elp-last-book-v2',daily:'elp-13-daily',videos:'elp-13-videos',reviewConfig:'elp-14-review-config',practiceLog:'elp-14-practice-log',lesson:'elp-15-focused-lesson'};
 const parseLS=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key));return v??fallback}catch{return fallback}};
 const putLS=(key,obj)=>{try{localStorage.setItem(key,JSON.stringify(obj));return true}catch{toast('Не вистачає місця. Збережи резервну копію.');return false}};
 const uuid=()=>typeof crypto.randomUUID==='function'?crypto.randomUUID():'pocket-'+Date.now()+'-'+Math.random().toString(36).slice(2);
@@ -484,7 +484,7 @@ $('exportBackup').onclick=async()=>{
  try{
   const books=await dbList(),local={};
   for(const key of Object.keys(localStorage))if(key.startsWith('elp-'))local[key]=localStorage.getItem(key);
-  downloadJson({app:'english-pocket',format:'vault-14',created:new Date().toISOString(),books,words,local,watched,settings},'english-pocket-full-backup-'+new Date().toISOString().slice(0,10)+'.json');
+  downloadJson({app:'english-pocket',format:'vault-15',created:new Date().toISOString(),books,words,local,watched,settings},'english-pocket-full-backup-'+new Date().toISOString().slice(0,10)+'.json');
   $('settingsStatus').textContent=`Резервна копія містить ${books.length} книг, ${words.length} карток, закладки та історію SRS.`;
  }catch(e){$('settingsStatus').textContent='Помилка створення копії: '+e.message}
 };
@@ -512,13 +512,14 @@ $('backupFile').onchange=async e=>{
   let addedBooks=0;for(const b of addBooks){await dbPut(b);addedBooks++}
   const r=mergeWords(incoming);
   if(data.local&&typeof data.local==='object'){
-   for(const key of [K.videos,K.daily,K.practiceLog,K.reviewConfig]){
+   for(const key of [K.videos,K.daily,K.practiceLog,K.reviewConfig,K.lesson]){
     if(localStorage.getItem(key)===null&&typeof data.local[key]==='string')localStorage.setItem(key,data.local[key]);
    }
    if(data.local[K.videos]){try{watched={...JSON.parse(data.local[K.videos]),...watched};putLS(K.videos,watched)}catch{}}
   }
   if(data.watched&&typeof data.watched==='object'){watched={...data.watched,...watched};putLS(K.videos,watched)}
   $('settingsStatus').textContent=`Готово: +${r.added} карток, доповнено ${r.updated}, +${addedBooks} книг. Дані не перезаписувалися.`;
+  if(typeof lessonState!=='undefined')lessonState=parseLS(K.lesson,null);
   drawShelf();drawWords();drawVideos();toast('Імпорт завершено');
  }catch(error){$('settingsStatus').textContent='Імпорт не завершено: '+error.message}
  finally{e.target.value=''}
