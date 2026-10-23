@@ -21,7 +21,7 @@ document.querySelectorAll('[data-wordtab]').forEach(b=>b.addEventListener('click
 const normalizeWord=(w)=>{if(!w||typeof w!=='object')return null;const text=clean(w.text??w.en),meaning=clean(w.meaning??w.uk),example=clean(w.example??w.context);if(!text||text.length>300)return null;const out={...w,id:String(w.id||uuid()),text,meaning,example,source:w.source||'',created:Number(w.created)||Date.now()};if(w.srs&&typeof w.srs==='object')out.srs={...w.srs};else if(Number(w.reps)>0&&Number(w.interval)>0)out.srs={step:Math.max(1,Math.min(9,Number(w.reps))),due:Number(w.due)||0,last:Number(w.created)||Date.now()};return out};
 let words=(Array.isArray(parseLS(K.words,[]))?parseLS(K.words,[]):[]).map(normalizeWord).filter(Boolean);
 const wordMatch=text=>words.find(x=>keyText(x.text)===keyText(text));
-const mastery=w=>!w.srs?'new':(Number(w.srs.interval)>=21&&Number(w.srs.streak)>=5?'mastered':'learning');
+const mastery=w=>window.EnglishPocket17?.mastery?window.EnglishPocket17.mastery(w):(!w.srs?'new':(Number(w.srs.interval)>=21&&Number(w.srs.streak)>=5?'mastered':'learning'));
 const wordBookSource=w=>sourceType(w)==='book'?clean(String(w.source||'').slice(5)):'';
 const statsLog=()=>parseLS(K.practiceLog,[]);
 function saveWords(){if(putLS(K.words,words)){drawWordStats();if(wordTab==='list')drawWordList()}}
@@ -88,7 +88,7 @@ function drawWordList(){
   content.append(node('div','wordtext',(w.favorite?'☆ ':'')+w.text),node('div','wordmeaning',w.meaning||'Додай переклад →'));
   if(w.example)content.append(node('div','wordexample',w.example));
   if(w.note)content.append(node('div','wordexample','Нотатка: '+w.note));
-  content.append(node('div','pill',({new:'Нова',learning:'Вивчаю',mastered:'Засвоєна'})[mastery(w)]+' · '+(wordBookSource(w)||sourceType(w)==='video'?'відео':'мій словник')));
+  content.append(node('div','pill',({new:'Нова',learning:'Вивчаю',mastered:'Засвоєна'})[mastery(w)]+' · '+(wordBookSource(w)||(sourceType(w)==='video'?'відео':'мій словник'))));
   content.addEventListener('click',()=>openCard({},w.id));
   const actions=node('div','mini-actions');
   actions.append(BTN('Змінити',()=>openCard({},w.id)));
@@ -512,7 +512,7 @@ $('backupFile').onchange=async e=>{
   let addedBooks=0;for(const b of addBooks){await dbPut(b);addedBooks++}
   const r=mergeWords(incoming);
   if(data.local&&typeof data.local==='object'){
-   for(const key of [K.videos,K.daily,K.practiceLog,K.reviewConfig,K.lesson]){
+   for(const key of [K.videos,K.daily,K.practiceLog,K.reviewConfig,K.lesson,'elp-16-today-v1','elp-17-speech-rate','elp-17-canada-progress','elp-17-video-notes','elp-17-daily-check']){
     if(localStorage.getItem(key)===null&&typeof data.local[key]==='string')localStorage.setItem(key,data.local[key]);
    }
    if(data.local[K.videos]){try{watched={...JSON.parse(data.local[K.videos]),...watched};putLS(K.videos,watched)}catch{}}
