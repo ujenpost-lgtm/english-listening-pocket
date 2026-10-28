@@ -512,7 +512,7 @@ $('backupFile').onchange=async e=>{
   let addedBooks=0;for(const b of addBooks){await dbPut(b);addedBooks++}
   const r=mergeWords(incoming);
   if(data.local&&typeof data.local==='object'){
-   for(const key of [K.videos,K.daily,K.practiceLog,K.reviewConfig,K.lesson,'elp-16-today-v1','elp-17-speech-rate','elp-17-canada-progress','elp-17-video-notes','elp-17-daily-check','elp-18-progress-checks','elp-18-practice','elp-18-video-lessons','elp-18-dialogues']){
+   for(const key of [K.videos,K.daily,K.practiceLog,K.reviewConfig,K.lesson,'elp-16-today-v1','elp-17-speech-rate','elp-17-canada-progress','elp-17-video-notes','elp-17-daily-check','elp-18-progress-checks','elp-18-practice','elp-18-video-lessons','elp-18-dialogues','elp-181-translation-cache','elp-181-theme']){
     if(localStorage.getItem(key)===null&&typeof data.local[key]==='string')localStorage.setItem(key,data.local[key]);
    }
    if(data.local[K.videos]){try{watched={...JSON.parse(data.local[K.videos]),...watched};putLS(K.videos,watched)}catch{}}
