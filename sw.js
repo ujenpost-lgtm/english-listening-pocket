@@ -1,5 +1,5 @@
-const CACHE='english-pocket-181-20261028';
-const ASSETS=['./','./index.html','./app.js','./learning_reader15.js','./a2_b1_cards.js','./learning_level16.js','./learning17.js','./learning18.js','./learning181.js','./pako.min.js','./starter_cards.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
+const CACHE='english-pocket-200-20261029';
+const ASSETS=['./','./index.html','./app.js','./learning_reader15.js','./a2_b1_cards.js','./learning_level16.js','./learning17.js','./learning18.js','./learning181.js','./canada20_data.js','./pocket20.js','./pocket20.css','./pako.min.js','./starter_cards.js','./manifest.webmanifest','./icon.svg','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)).then(()=>self.skipWaiting())));
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('english-pocket-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET'||new URL(r.url).origin!==location.origin)return;
