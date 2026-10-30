@@ -121,7 +121,7 @@ const p20Toggle=p20E('button','btn alt small',localStorage.getItem(P20.highlight
   const available=turns.filter(x=>x.card).length;state.append(p20E('strong','',`${available}/${turns.length} реплік уже вивчено`),p20E('p','smallhint',sc.goal),p20E('p','p20-scene-note',sc.note));
   actions.replaceChildren();actions.append(BTN('＋ Додати репліки до навчання',()=>{
    const data=[...sc.steps,...sc.extra].map(t=>({text:t.en,meaning:t.uk,example:t.en,source:'canada:'+sc.name,level:sc.level}));
-   const r=mergeWords(data);for(const t of sc.steps){const w=wordMatch(t.en);if(w&&!ep181Studied(w))w.p20Priority=Date.now()}saveWords();toast(`Додано ${r.added} карток. Вони будуть першими серед нових.`);refresh();
+   const r=mergeWords(data);for(const t of [...sc.steps,...sc.extra]){const w=wordMatch(t.en);if(w){w.p201Included=true;if(!ep181Studied(w))w.p20Priority=Date.now()}}saveWords();toast(`Додано ${r.added} карток. Вони будуть першими серед нових.`);refresh();
   },'btn alt small'));
   const start=BTN('Почати діалог',()=>begin(false),'btn');start.disabled=!(turns[0].card&&turns[1].card);actions.prepend(start);
   const extra=BTN('Ускладнена ситуація',()=>begin(true),'btn alt small');extra.disabled=!(turns[0].card&&turns[1].card&&ready(sc,true).every(t=>!!t.card));actions.append(extra);

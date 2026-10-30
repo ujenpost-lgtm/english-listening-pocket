@@ -13,3 +13,9 @@ html[data-ep181-theme="light"] .p20-step{background:#ffffff99;border-color:#bbd4
 .p20-learned-mark{background:transparent!important;color:inherit!important;text-decoration:underline dotted #5fa8e8;text-decoration-thickness:1.5px;text-underline-offset:3px}
 .p20-safety .btn{margin:6px 7px 0 0}.p20-safety summary{cursor:pointer;font-weight:700}
 @media(max-width:650px){.p20-steps{grid-template-columns:1fr}.p20-step{min-height:55px;padding:9px 12px}.p20-step-icon{font-size:20px}.p20-audio-area,.p20-scene-body{padding:12px 0}}
+
+/* 20.1 — clear context prompts, without extra menus */
+.ep201-context-card .ep201-context-text{font-size:clamp(18px,4.5vw,23px);line-height:1.55;white-space:normal;overflow-wrap:anywhere;margin:10px 0}
+.ep201-translation{font-size:14px;color:var(--bright);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:9px 0;line-height:1.6}
+.ep201-source-note{border-left:2px solid var(--accent);padding-left:11px;margin-top:12px}
+.ep201-context-card .input{margin-bottom:12px}
