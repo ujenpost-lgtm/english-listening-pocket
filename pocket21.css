@@ -1,0 +1,10 @@
+/* Pocket 21 – a single expandable practice surface; no additional main tabs */
+.ep21-hub{margin-top:13px}.ep21-hub-body,.ep21-display{display:grid;gap:11px}
+.ep21-modes{display:flex;gap:6px;overflow-x:auto;padding:3px 0;scrollbar-width:thin}
+.ep21-modes .btn{flex-shrink:0;padding:9px 12px}.ep21-modes .active{background:#2379bb!important;border-color:#5daee1!important;color:white!important}
+.ep21-exercise,.ep21-grammar-item,.ep21-quality-row,.ep21-canada-turn{background:var(--panel2);border:1px solid var(--line);border-radius:13px;padding:13px;display:grid;gap:9px}
+.ep21-prompt{font-size:1.04rem;line-height:1.65;white-space:pre-wrap;margin:6px 0}.ep21-story{font-size:.98rem;line-height:1.7;white-space:pre-wrap;margin:6px 0}
+.ep21-feedback:empty{display:none}.ep21-feedback{display:grid;gap:6px}.ep21-grammar{border-top:1px solid var(--line);padding-top:9px}.ep21-grammar summary,.ep21-card-variants summary{cursor:pointer;color:var(--muted);font-size:.9rem}
+.ep21-grammar-body,.ep21-quality-body,.ep21-canada-body{display:grid;gap:10px;margin-top:10px}.ep21-quality{margin-top:16px;padding:12px;border:1px solid var(--line);border-radius:13px}.ep21-quality summary,.ep21-canada-branches summary{cursor:pointer;font-weight:650}
+.ep21-quality-row{grid-template-columns:minmax(0,1fr) auto auto;align-items:center}.ep21-quality-row p{margin:2px 0}.ep21-quality-row strong{overflow-wrap:anywhere}.ep21-reader-review{max-height:min(55dvh,440px);overflow-y:auto}.ep21-reader-task{display:grid;gap:9px}.ep21-canada-branches{margin-top:12px;border-top:1px solid var(--line);padding-top:12px}.ep21-partner{line-height:1.5;background:var(--panel);padding:10px;border-radius:10px}.ep21-story-task{padding:10px;border-top:1px solid var(--line)}
+@media(max-width:540px){.ep21-quality-row{grid-template-columns:minmax(0,1fr) auto}.ep21-quality-row button:last-child:nth-child(3){grid-column:2}.ep21-exercise{padding:11px}.ep21-reader-review{bottom:calc(56px + env(safe-area-inset-bottom,0px));max-height:52dvh}}
