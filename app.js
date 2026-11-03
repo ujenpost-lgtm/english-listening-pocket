@@ -78,7 +78,7 @@ $('wordBookFilter').onchange=()=>{listLimit=20;drawWordList()};
 function drawWordList(){
  const list=$('wordsList'),q=keyText($('wordSearch').value),f=$('wordFilter').value,bf=$('wordBookFilter').value;
  const selected=words.filter(w=>{
-  const stateOk=f==='all'||(f==='favorite'?!!w.favorite:['new','learning','mastered'].includes(f)?mastery(w)===f:sourceType(w)===f);
+  const stateOk=f==='all'||(f==='weak'?!!window.EnglishPocket202?.hard(w):f==='favorite'?!!w.favorite:['new','learning','mastered'].includes(f)?mastery(w)===f:sourceType(w)===f);
   return stateOk&&(bf==='all'||wordBookSource(w)===bf)&&keyText(w.text+' '+w.meaning+' '+w.example+' '+(w.note||'')).includes(q);
  });
  list.replaceChildren();$('wordTotal').textContent=selected.length+' карток';

@@ -1,0 +1,8 @@
+/* English Pocket 20.3: quiet feedback within existing three-tab layout. */
+.ep203-summary{margin:7px 1px 13px;padding:10px 12px;border:1px solid var(--line, #36526b);border-radius:12px;background:rgba(50,130,186,.075);font-size:.85rem;line-height:1.5;color:var(--muted,#b9cedb)}
+.ep203-summary strong{color:var(--text,#e8f4ff);font-weight:650}
+.ep203-skill-hint{font-size:.79rem;padding:5px 9px;margin-bottom:10px;border-left:3px solid #3896cf;border-radius:5px;background:rgba(63,145,202,.10)}
+.ep203-replay{padding:14px;margin-top:12px;border-radius:14px;border:1px solid var(--line, #36526b);background:rgba(44,110,162,.07)}
+.ep203-replay .input{margin:9px 0}
+.ep203-replay .p20-partner{margin:8px 0}
+@media(max-width:480px){.ep203-replay{padding:11px}.ep203-summary{font-size:.8rem}}

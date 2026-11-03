@@ -19,3 +19,6 @@ html[data-ep181-theme="light"] .p20-step{background:#ffffff99;border-color:#bbd4
 .ep201-translation{font-size:14px;color:var(--bright);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:9px 0;line-height:1.6}
 .ep201-source-note{border-left:2px solid var(--accent);padding-left:11px;margin-top:12px}
 .ep201-context-card .input{margin-bottom:12px}
+
+/* 20.2 — subtle mistake focus; no additional control panels */
+.ep202-hint{font-size:12px;color:var(--muted);padding:0 0 9px;margin:0 0 10px;border-bottom:1px solid var(--line);line-height:1.45}
