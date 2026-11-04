@@ -155,7 +155,7 @@ readerLookup=function(text,context=''){
  show('trayExternal',false);
  const local=clean($('trayMeaning').value),cached=ep181CacheGet(text);
  if(!local&&cached){$('trayMeaning').value=cached;$('trayStatus').textContent='Збережений переклад · можна виправити'}
- else if(!local&&localStorage.getItem(EP181.consentKey)==='yes')ep181Translate();
+ else if(!local)$('trayStatus').textContent='Локальне значення не знайдено; за потреби введи власний переклад.';
  else if(!local)$('trayStatus').textContent='Натисни «Перекласти» — онлайн-переклад у цій панелі';
 };
 const ep181OriginalTurn=turn;
