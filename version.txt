@@ -1,0 +1,3 @@
+English Pocket 23.0
+Виправлено назву PWA у manifest.webmanifest, оновлено кеш service worker.
+Дата збірки: 2026-11-06
