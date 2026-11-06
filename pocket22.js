@@ -1,4 +1,4 @@
-/* English Pocket 22.0 — progressive enhancement of 21.0. User data and keys preserved.
+/* English Pocket 22.1 — progressive enhancement of 21.0. User data and keys preserved.
    No AI API or covert online translator; uses cards and curated offline glossary. */
 'use strict';
 (()=>{
@@ -6,7 +6,7 @@ const q=id=>document.getElementById(id), mk=(tag,cls='',text='')=>{const n=docum
     add=(p,...els)=>{p.append(...els);return p},
     ls=(key,def)=>{try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):def}catch{return def}},
     save=(key,val)=>localStorage.setItem(key,JSON.stringify(val));
-const EP22={version:'22.0',voiceKey:'elp-22-voice',prefKey:'elp-22-ui',videoKey:'elp-22-video-path',chapterKey:'elp-22-chapter-learning',userVoice:'',flipTimer:null,flipBusy:false,audio:null};
+const EP22={version:'22.1',voiceKey:'elp-22-voice',prefKey:'elp-22-ui',videoKey:'elp-22-video-path',chapterKey:'elp-22-chapter-learning',userVoice:'',flipTimer:null,flipBusy:false,audio:null};
 window.EP22=EP22;
 const norm=s=>String(s||'').normalize('NFKC').toLocaleLowerCase('en').replace(/[’‘]/g,"'").replace(/^[\s.,!?;:"“”()]+|[\s.,!?;:"“”()]+$/g,'').replace(/\s+/g,' ').trim();
 const userCards=()=>words.filter(w=>w&&w.text&&w.meaning), studied=()=>userCards().filter(w=>ep181Studied(w));
@@ -19,53 +19,99 @@ const settingsTarget=q('settingsDialog')?.querySelector('.dialog-content')||q('s
 if(settingsTarget){const p=mk('div','ep22-preferences');add(p,mk('strong','','Вигляд і звук'),theme);settingsTarget.prepend(p)}
 applyTheme();
 
-// 2. Device voices. Gender is not exposed by Web Speech API; prefer common male-labelled
-// voices when installed, then allow user choice with a preview.
-const voicePhrases=['UK English Male','Google UK English Male','Microsoft Guy','Microsoft David','Microsoft Ryan','Microsoft Christopher','Daniel','Aaron','Arthur','Alex','Fred'];
-const voiceBox=mk('div','ep22-voice-settings'),vLabel=mk('label','','Англійський голос'),vSelect=mk('select','input'),vHint=mk('p','smallhint','Доступні голоси залежать від телефона та браузера. Обери той, який звучить найкраще.'),vTry=mk('button','btn alt small','🔊 Перевірити голос');
-const oldRate=()=>typeof EP17!=='undefined'?EP17.rate:.86;
-let availableVoices=[];EP22.userVoice=localStorage.getItem(EP22.voiceKey)||'';
+// 2. Browser voices have no reliable gender field. Prefer common male-labelled names,
+// then let the user choose explicitly. Do not change pitch to fake a male voice.
+const maleNames=/\b(male|guy|david|ryan|christopher|andrew|daniel|aaron|arthur|alex|fred|liam|oliver|george|james|graham|thomas|tom|rishi|reed|matthew|eric|mark|richard|charles|adam|brian|roger|john|peter|alan|lee)\b/i;
+const femaleNames=/\b(female|zira|hazel|susan|samantha|victoria|aria|jenny|serena|ava|siri|allison|emily|emma|karen|moira|fiona|kate|sara|heather|catherine|natasha|sonia)\b/i;
+const voiceBox=mk('div','ep22-voice-settings'),vLabel=mk('label','','Голос англійською'),vSelect=mk('select','input'),vHint=mk('p','smallhint','За замовчуванням — чоловічий, якщо він є серед голосів телефона. Послухай і вибери найприємніший.'),vTry=mk('button','btn alt small','🔊 Послухати приклад');
+const oldRate=()=>typeof EP17!=='undefined'?EP17.rate:.9;
+EP22.userVoice=localStorage.getItem(EP22.voiceKey)||'';
+const voiceMigrationKey='elp-221-male-preference';
+if(!localStorage.getItem(voiceMigrationKey)){
+  // The last version could preserve an automatically assigned female voice.
+  // Reset just the old voice choice once so the new male-first preference applies.
+  EP22.userVoice=''; localStorage.removeItem(EP22.voiceKey);
+  localStorage.setItem(voiceMigrationKey,'1');
+}
 function voices(){if(!('speechSynthesis' in window))return[];return speechSynthesis.getVoices().filter(v=>/^en(?:-|_)/i.test(v.lang));}
-function preferredVoice(){const existing=voices();return existing.find(v=>v.voiceURI===EP22.userVoice)||existing.find(v=>voicePhrases.some(n=>v.name.includes(n)))||existing.find(v=>/en-CA/i.test(v.lang))||existing.find(v=>/en-GB/i.test(v.lang))||existing[0]||null}
-function renderVoices(){const old=vSelect.value||EP22.userVoice;availableVoices=voices();vSelect.replaceChildren();vSelect.add(new Option('Автоматично · доступний англійський',''));
- for(const v of availableVoices)vSelect.add(new Option(v.name+' · '+v.lang,v.voiceURI));vSelect.value=availableVoices.some(v=>v.voiceURI===old)?old:'';
- if(!availableVoices.length)vHint.textContent='На цьому пристрої англійські голоси ще не завантажені. Перевір мовні налаштування телефона.';
+function maleScore(v){const n=v.name||'';let sc=0;if(maleNames.test(n))sc+=100;if(femaleNames.test(n))sc-=120;
+ if(/natural|neural|enhanced|premium/i.test(n))sc+=15;
+ if(/en-CA/i.test(v.lang))sc+=10;else if(/en-GB/i.test(v.lang))sc+=6;else if(/en-US/i.test(v.lang))sc+=5;
+ return sc;}
+function preferredVoice(){const all=voices();return all.find(v=>v.voiceURI===EP22.userVoice)||all.slice().sort((a,b)=>maleScore(b)-maleScore(a))[0]||null;}
+function renderVoices(){const current=EP22.userVoice,all=voices().sort((a,b)=>maleScore(b)-maleScore(a));vSelect.replaceChildren();
+ vSelect.add(new Option('Автоматично — чоловічий у пріоритеті',''));
+ for(const v of all)vSelect.add(new Option((maleNames.test(v.name)&&!femaleNames.test(v.name)?'● ':'')+v.name+' · '+v.lang,v.voiceURI));
+ vSelect.value=all.some(v=>v.voiceURI===current)?current:'';
+ if(!all.length)vHint.textContent='Англійські голоси ще не завантажені. Перевір мовні налаштування телефона.';
+ else if(!all.some(v=>maleNames.test(v.name)&&!femaleNames.test(v.name)))vHint.textContent='Не знайдено голосу з чоловічою назвою. Обери доступний або додай англійський голос у налаштуваннях пристрою.';
+ else vHint.textContent='Рекомендований чоловічий голос вибрано автоматично. Можна прослухати інші й зберегти вибір.';
 }
 function speech(text,opt={}){if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined'){toast('Озвучування недоступне на цьому пристрої');return}
- speechSynthesis.cancel();const str=String(text||'').trim();if(!str)return;const chunks=str.slice(0,7000).match(/.{1,170}(?:[.!?]\s|\s|$)/gu)||[str.slice(0,7000)];let i=0;
- function next(){if(i>=chunks.length){opt.onDone?.();return}const u=new SpeechSynthesisUtterance(chunks[i++]),v=preferredVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-CA';u.rate=Math.min(1.15,Math.max(.68,oldRate()));u.pitch=.94;u.onend=next;u.onerror=e=>{if(!['interrupted','canceled'].includes(e.error))toast('Не вдалося озвучити текст');opt.onDone?.()};speechSynthesis.speak(u)}next();}
+ const str=String(text||'').trim();if(!str)return;
+ speechSynthesis.cancel();const chunks=str.slice(0,7000).match(/.{1,170}(?:[.!?]\s|\s|$)/gu)||[str.slice(0,7000)];let i=0;
+ function next(){if(i>=chunks.length){opt.onDone?.();return}const u=new SpeechSynthesisUtterance(chunks[i++]),v=preferredVoice();
+ if(v){u.voice=v;u.lang=v.lang}else u.lang='en-CA';
+ u.rate=Math.min(1.1,Math.max(.72,oldRate()));u.pitch=1;
+ u.onend=next;u.onerror=e=>{if(!['interrupted','canceled'].includes(e.error))toast('Не вдалося озвучити текст');opt.onDone?.()};speechSynthesis.speak(u)}next();}
 vSelect.onchange=()=>{EP22.userVoice=vSelect.value;localStorage.setItem(EP22.voiceKey,EP22.userVoice)};
-vTry.onclick=()=>speech('Could you please speak more slowly? I am learning English.');
+vTry.onclick=()=>speech('Hi! Welcome to English Pocket. Let us practise everyday English together.');
 add(voiceBox,vLabel,vSelect,vHint,vTry);if(settingsTarget)settingsTarget.prepend(voiceBox);
-renderVoices();q('settingsButton')?.addEventListener('click',()=>setTimeout(renderVoices,80));if('speechSynthesis'in window)speechSynthesis.addEventListener?.('voiceschanged',renderVoices);
+renderVoices();q('settingsButton')?.addEventListener('click',()=>setTimeout(renderVoices,80));
+if('speechSynthesis' in window){speechSynthesis.addEventListener?.('voiceschanged',renderVoices);setTimeout(renderVoices,900)}
 speakEnglish=function(text){speech(text)};
 
 // 3. Trustworthy offline lookup. Word and phrase translations ONLY: never fabricate
 // a full sentence translation from individual word glosses.
 function getOfflineMap(){const dictionary=new Map();const insert=(en,uk,priority)=>{const k=norm(en);if(!k||!uk)return;const old=dictionary.get(k);if(!old||priority>old.priority)dictionary.set(k,{en,uk,priority})};
  for(const [en,uk] of Object.entries(window.EP22_OFFLINE_LEXICON||{}))insert(en,uk,1);
- for(const [en,rec] of ep17Dict())insert(rec.text||en,rec.meaning,2);
- for(const card of userCards())insert(card.text,card.meaning,4);
+ for(const [en,uk] of Object.entries(window.EP221_EXTRA_LEXICON||{}))insert(en,uk,2);
+ for(const [en,rec] of ep17Dict())insert(rec.text||en,rec.meaning,3);
+ for(const card of userCards())insert(card.text,card.meaning,5);
  return dictionary;}
-function offlineLookup(text){const d=getOfflineMap(),key=norm(text);let exact=d.get(key);if(exact)return {exact:true,meaning:exact.uk,source:exact.priority===4?'Твоя картка':'Локальна база'};
- // Recognize a handful of safe inflections, not arbitrary grammatical analyses.
- if(!key.includes(' '))for(const base of [key.replace(/ies$/,'y'),key.replace(/ing$/,''),key.replace(/ing$/,'e'),key.replace(/ed$/,''),key.replace(/ed$/,'e'),key.replace(/s$/,'')]){if(base!==key&&d.has(base))return {exact:false,meaning:d.get(base).uk,source:'Словникова форма: '+base,derived:true}}
- const gloss=[];for(const [part,r] of [...d.entries()].filter(([k])=>k.length>=4&&k.includes(' ')).sort((a,b)=>b[0].length-a[0].length)){
-  if(gloss.length>=5)break;const needle=part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');if(new RegExp('(^|[^\\p{L}])'+needle+'(?=$|[^\\p{L}])','iu').test(key)&&!gloss.some(x=>norm(x.en)===part))gloss.push({en:r.en,uk:r.uk})}
- // Additional single-word glosses for shorter sentences.
- if(gloss.length<4)for(const w of key.match(/[\p{L}']+/gu)||[]){if(gloss.length>=5)break;const r=d.get(w);if(r&&w.length>=4&&!gloss.some(x=>norm(x.en)===w))gloss.push({en:r.en,uk:r.uk})}
+const irregularRoots={am:'be',is:'be',are:'be',was:'be',were:'be',been:'be',being:'be',has:'have',had:'have',does:'do',did:'do',done:'do',went:'go',gone:'go',saw:'see',seen:'see',ate:'eat',eaten:'eat',drank:'drink',drunk:'drink',ran:'run',took:'take',taken:'take',got:'get',gotten:'get',gave:'give',given:'give',knew:'know',known:'know',wrote:'write',written:'write',spoke:'speak',spoken:'speak',bought:'buy',brought:'bring',thought:'think',caught:'catch',taught:'teach',made:'make',found:'find',felt:'feel',kept:'keep',left:'leave',lost:'lose',paid:'pay',met:'meet',sent:'send',built:'build',heard:'hear',held:'hold',told:'tell',sold:'sell',read:'read',fell:'fall',fallen:'fall',grew:'grow',grown:'grow',began:'begin',begun:'begin',chose:'choose',chosen:'choose',drew:'draw',drawn:'draw',drove:'drive',driven:'drive',broke:'break',broken:'break',forgot:'forget',forgotten:'forget',understood:'understand',won:'win',wore:'wear',worn:'wear',stood:'stand',sat:'sit',slept:'sleep',spent:'spend',put:'put',cut:'cut',hit:'hit',shut:'shut',said:'say',fought:'fight',flew:'fly',flown:'fly',swam:'swim',swum:'swim',sang:'sing',sung:'sing',stole:'steal',stolen:'steal',hid:'hide',hidden:'hide',rode:'ride',ridden:'ride',rose:'rise',risen:'rise',chose:'choose',bit:'bite',bitten:'bite',lay:'lie',laid:'lay',led:'lead',lent:'lend',borrowed:'borrow',children:'child',men:'man',women:'woman',people:'person',feet:'foot',teeth:'tooth',mice:'mouse',geese:'goose',better:'good',best:'good',worse:'bad',worst:'bad',further:'far',farther:'far'};
+function lemmaCandidates(token){const k=norm(token);if(!k||k.includes(' '))return[];
+ const c=[];const push=x=>{if(x&&x!==k&&!c.includes(x)&&x.length>=2)c.push(x)};
+ push(irregularRoots[k]);
+ if(k.length>=5){
+  if(k.endsWith('ies'))push(k.slice(0,-3)+'y');
+  if(k.endsWith('ied'))push(k.slice(0,-3)+'y');
+  if(k.endsWith('ves')){push(k.slice(0,-3)+'f');push(k.slice(0,-3)+'fe')}
+  if(k.endsWith('es')){push(k.slice(0,-2));push(k.slice(0,-1))}
+  if(k.endsWith('ing')){const base=k.slice(0,-3);push(base);push(base+'e');if(/([b-df-hj-np-tv-z])\1$/.test(base))push(base.slice(0,-1));}
+  if(k.endsWith('ed')){const base=k.slice(0,-2);push(base);push(base+'e');if(/([b-df-hj-np-tv-z])\1$/.test(base))push(base.slice(0,-1))}
+  if(k.endsWith('er')){push(k.slice(0,-2));push(k.slice(0,-1));}
+  if(k.endsWith('est')){push(k.slice(0,-3));push(k.slice(0,-2));}
+  if(k.endsWith('s')&&!k.endsWith('ss'))push(k.slice(0,-1));
+ }
+ return c;}
+function offlineLookup(text){const dict=getOfflineMap(),key=norm(text);const exact=dict.get(key);if(exact)return {exact:true,meaning:exact.uk,source:exact.priority===5?'Твоя картка':'Офлайн-словник'};
+ let base='';if(!key.includes(' ')){base=lemmaCandidates(key).find(x=>dict.has(x))||'';}
+ else{const parts=key.split(' ');for(const b of lemmaCandidates(parts[0])){const q=[b,...parts.slice(1)].join(' ');if(dict.has(q)){base=q;break;}}}
+ if(base){const hit=dict.get(base);return {exact:false,derived:true,meaning:hit.uk,base,source:'Словникова форма: '+base};}
+ const gloss=[];const addGloss=(en,r)=>{if(gloss.length<5&&!gloss.some(x=>norm(x.en)===norm(en)))gloss.push({en:r.en||en,uk:r.uk})};
+ // Match phrasal verbs first. Avoid substring matches inside other words.
+ for(const [part,r] of [...dict.entries()].filter(([k])=>k.length>=4&&k.includes(' ')).sort((a,b)=>b[0].length-a[0].length)){
+  if(gloss.length>=3)break;const needle=part.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+  if(new RegExp('(^|[^\\p{L}])'+needle+'(?=$|[^\\p{L}])','iu').test(key))addGloss(part,r);
+ }
+ if(gloss.length<5)for(const part of key.match(/[\p{L}']+/gu)||[]){if(gloss.length>=5)break;
+  const direct=dict.get(part),root=lemmaCandidates(part).find(x=>dict.has(x)),hit=direct||(root&&dict.get(root));
+  if(hit&&part.length>=3)addGloss(part,hit);
+ }
  return {exact:false,gloss};}
 // Disable legacy automatic cloud calls; the user must explicitly choose them.
 const oldLookup=readerLookup;
 readerLookup=function(text,context=''){oldLookup(text,context);const local=offlineLookup(text);const saved=ep181CacheGet(text),exact=local.exact&&local.meaning;
  if(exact){q('trayMeaning').value=local.meaning;q('trayStatus').textContent=local.source+' · доступно офлайн';}
+ else if(local.derived){q('trayMeaning').value=local.meaning;q('trayStatus').textContent='Словникова форма: '+local.base+' · перевір значення у контексті';}
  else if(saved){q('trayMeaning').value=saved;q('trayStatus').textContent='Збережений попередній переклад · перевір значення';}
  else {q('trayMeaning').value='';q('trayStatus').textContent=local.derived?'Знайдено словникову форму — перевір значення':'Немає точного локального перекладу. Можна додати власний.'}
  const gloss=q('ep17Glosses');if(gloss){gloss.replaceChildren();if(!exact&&local.gloss?.length){gloss.append(mk('div','smallhint','Знайомі слова і вирази (це не переклад цілого речення):'));for(const g of local.gloss){const line=mk('div','ep22-glossline');add(line,mk('b','',g.en),mk('span','',g.uk));gloss.append(line)}}}
  const btn=q('ep181Translate');if(btn){btn.textContent='Локальний переклад';btn.disabled=false;}
 };
 const oldEp181Btn=q('ep181Translate');if(oldEp181Btn){oldEp181Btn.onclick=async()=>{
- if(!trayValue?.text)return;const info=offlineLookup(trayValue.text);if(info.exact){q('trayMeaning').value=info.meaning;q('trayStatus').textContent='Локальна база · готово';return}
+ if(!trayValue?.text)return;const info=offlineLookup(trayValue.text);if(info.exact||info.derived){q('trayMeaning').value=info.meaning;q('trayStatus').textContent=info.derived?'Словникова форма: '+info.base+' · перевір контекст':'Офлайн-словник · готово';return}
  if(typeof window.Translator==='function'||window.Translator){
   try{const T=window.Translator,status=await T.availability({sourceLanguage:'en',targetLanguage:'uk'});
    if(status==='available'){q('trayStatus').textContent='Локальна модель перекладає…';const instance=await T.create({sourceLanguage:'en',targetLanguage:'uk'});try{const out=await instance.translate(trayValue.text);q('trayMeaning').value=String(out||'');q('trayStatus').textContent='Переклад на пристрої · перевір перед збереженням'}finally{instance.destroy?.()}return}
@@ -101,7 +147,7 @@ function clearSpeechGlow(){q('pageText')?.querySelectorAll('.ep22-speaking').for
 let currentParagraphs=[];
 function visibleParagraphs(){const page=q('pageWindow').getBoundingClientRect();return [...q('pageText').querySelectorAll('p,h1,h2,h3,h4,li,blockquote')].filter(p=>[...p.getClientRects()].some(r=>r.left<page.right-8&&r.right>page.left+8&&r.bottom>page.top+5&&r.top<page.bottom-5)).slice(0,18)}
 function speechParagraphs(paras){if(!paras.length)return;stopSpeech();let i=0;
- const speakNext=()=>{clearSpeechGlow();if(i>=paras.length)return;const p=paras[i++];if(!p?.textContent?.trim())return speakNext();p.classList.add('ep22-speaking');p.scrollIntoView?.({block:'nearest'});const u=new SpeechSynthesisUtterance(p.textContent.trim().slice(0,450));const v=preferredVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-CA';u.rate=oldRate();u.pitch=.94;u.onend=speakNext;u.onerror=clearSpeechGlow;speechSynthesis.speak(u)};speakNext()}
+ const speakNext=()=>{clearSpeechGlow();if(i>=paras.length)return;const p=paras[i++];if(!p?.textContent?.trim())return speakNext();p.classList.add('ep22-speaking');p.scrollIntoView?.({block:'nearest'});const u=new SpeechSynthesisUtterance(p.textContent.trim().slice(0,450));const v=preferredVoice();if(v){u.voice=v;u.lang=v.lang}else u.lang='en-CA';u.rate=oldRate();u.pitch=1;u.onend=speakNext;u.onerror=clearSpeechGlow;speechSynthesis.speak(u)};speakNext()}
 q('readerSpeak').onclick=()=>{if(!('speechSynthesis'in window))return toast('Озвучування недоступне');if(speechSynthesis.speaking){stopSpeech();clearSpeechGlow();return}speechParagraphs(visibleParagraphs())};
 const speechBaseStop=stopSpeech;stopSpeech=function(){speechBaseStop();clearSpeechGlow()};
 // mode: tap a paragraph to read it without copying selection.
@@ -199,5 +245,6 @@ ep21OpenChapterReview=function(){originalChapterReview();if(!book)return;const p
 // 13. Backup bridge: the existing full backup exports all elp-* keys, including
 // these new fields. Preserve fresh content after importing a backup.
 q('backToLibrary')?.addEventListener('click',clearSpeechGlow);
-const f=document.querySelector('.app > footer.footnote');if(f)f.textContent='English Pocket 22.0 · A2+ → B1 · Приватний словник і книги на твоєму пристрої';
+const f=document.querySelector('.app > footer.footnote');if(f)f.textContent='English Pocket 22.1 · A2+ → B1 · Приватний словник і книги на твоєму пристрої';
+EP22.dictionaryLookup=offlineLookup;EP22.voiceChoice=preferredVoice;EP22.voiceScore=maleScore;
 })();
