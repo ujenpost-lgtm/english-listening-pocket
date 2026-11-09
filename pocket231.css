@@ -1,0 +1,21 @@
+/* v23.1: focused recall, one fixed story, and no Canada dialogues in Words. */
+#ep18CanadaDetails,#ep17Canada{display:none!important}
+.ep231-recall-card{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:15px;display:grid;gap:10px}
+.ep231-track{height:5px;border-radius:99px;overflow:hidden;background:var(--line)}
+.ep231-track-fill{height:100%;background:var(--accent);transition:width .2s}
+.ep231-recall-hint{font-size:12px;color:var(--muted);margin:0}
+.ep231-meaning{font-size:15px;font-weight:650;margin:0;color:var(--bright)}
+.ep231-context{padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;font-size:17px;line-height:1.6;white-space:pre-wrap}
+.ep231-recall-feedback{display:grid;gap:5px;font-size:14px}
+.ep231-recall-actions{gap:8px}
+.ep231-story{display:grid;gap:13px}
+.ep231-story h3{font-size:19px;margin:0}
+.ep231-story-text{line-height:1.86;white-space:pre-line;font-size:16px;background:var(--panel2);border-radius:16px;padding:16px;border:1px solid var(--line);margin:0}
+.ep231-story-section{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--panel)}
+.ep231-story-section>summary{font-size:15px;font-weight:700;cursor:pointer}
+.ep231-story-question{display:grid;gap:9px;padding:14px 0;border-bottom:1px solid var(--line)}
+.ep231-story-question:last-child{border-bottom:0}
+.ep231-story-question button{justify-self:start}
+.ep231-story-section textarea{display:block;width:100%;margin:7px 0 14px}
+.ep231-model{padding:10px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;line-height:1.5}
+@media(max-width:520px){.ep231-recall-card,.ep231-story-text{padding:12px}.ep231-context{font-size:15px}}
