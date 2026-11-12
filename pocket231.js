@@ -34,9 +34,8 @@
   return examples[(Math.max(0,Number(w.ep203ContextIndex)||0)+(isRetry?1:0))%examples.length];
  }
  function checkAnswer(answer,w,cue){
-  const judged=ep21Judge(answer,w,false);
-  if(judged==='correct'||judged==='typo'||judged==='empty')return judged;
-  return cue?.surface&&ep21Norm(answer)===ep21Norm(cue.surface)?'correct':'wrong';
+  if(cue?.masked&&cue.surface){const a=ep21Norm(answer),b=ep21Norm(cue.surface);return !a?'empty':a===b?'correct':ep21OneEdit(a,b)?'typo':'wrong'}
+  return ep21Judge(answer,w,false);
  }
  function displayRecall(){
   const area=$('ep18TrainingArea');if(!area)return;
@@ -65,19 +64,22 @@
   const input=mk('input','input');input.placeholder='Напиши англійську фразу';input.autocomplete='off';input.autocapitalize='off';input.spellcheck=false;wrapper.append(input);
   const result=mk('div','ep231-recall-feedback');result.setAttribute('aria-live','polite');wrapper.append(result);
   const actions=mk('div','row wrap ep231-recall-actions');wrapper.append(actions);
-  let completed=false;
+  let completed=false,hintLevel=0,typoAttempts=0;
   function finish(ok,wasShown=false){
    if(completed)return;completed=true;
-   s.answers.push({id:w.id,ok,retry:isRetry,day:dateKey(),at:Date.now(),shown:wasShown});
-   if(!ok&&!isRetry&&!s.retry.includes(w.id))s.retry.push(w.id);
+   const independent=ok&&!hintLevel&&!wasShown;const assisted=!!hintLevel||wasShown;
+   w.ep24Hints={...(w.ep24Hints||{}),used:(w.ep24Hints?.used||0)+(assisted?1:0),revealed:(w.ep24Hints?.revealed||0)+(wasShown?1:0),independent:(w.ep24Hints?.independent||0)+(independent?1:0)};
+   s.answers.push({id:w.id,ok:independent,assisted,retry:isRetry,day:dateKey(),at:Date.now(),shown:wasShown});
+   if(!independent&&!isRetry&&!s.retry.includes(w.id))s.retry.push(w.id);
    // One canonical outcome; records in ep202Focus and ep203Skills are preserved in normal JSON backups.
-   ep202Record(w,ok,'context');
-   if(typeof ep17Recall==='function')ep17Recall(w,ok,'ep231-recall');
-   if(typeof trackPractice==='function')trackPractice(ok,'context');
+   ep202Record(w,independent,'context');
+   if(typeof ep17Recall==='function')ep17Recall(w,independent,'ep231-recall');
+   if(typeof trackPractice==='function')trackPractice(independent,'context');
    input.disabled=true;actions.replaceChildren();
    if(cue?.example)result.append(mk('p','smallhint','Речення повністю: '+cue.example));
    if(!ok)result.prepend(mk('strong','','Правильна фраза: '+(cue?.surface||w.text)));
-   else result.prepend(mk('strong','','✓ Правильно'));
+   else result.prepend(mk('strong','',independent?'✓ Правильно':'✓ З підказкою · повторимо ще раз'));
+   saveWords();
    // Commit the cursor immediately: reloading after an answer cannot count it twice.
    s.index++;if(s.index===count&&s.retry.length){s.queue.push(...s.retry)}
    if(s.index>=s.queue.length)s.finished=true;
@@ -87,9 +89,10 @@
   actions.append(button('Перевірити',()=>{
    if(completed)return;const judgement=checkAnswer(input.value,w,cue);
    if(judgement==='empty'){result.textContent='Спочатку введи фразу.';return}
-   if(judgement==='typo'){result.textContent='Майже правильно: перевір одну літеру й спробуй ще. Помилку поки не записано.';return}
+   if(judgement==='typo'&&typoAttempts++===0){result.textContent='Майже правильно: перевір одну літеру й спробуй ще. Помилку поки не записано.';return}
    result.replaceChildren();finish(judgement==='correct');
   },'btn small'));
+  const hb=button('Підказка',()=>{hintLevel++;const answer=cue?.surface||w.text;const parts=answer.split(/\s+/);result.textContent=hintLevel===1?parts.map(x=>x[0]+'…').join(' '):hintLevel===2&&parts.length>1?parts[0]+' '+parts.slice(1).map(x=>x[0]+'…').join(' '):answer;hb.disabled=hintLevel>=3});actions.append(hb);
   actions.append(button('Не пам’ятаю',()=>{result.replaceChildren();finish(false,true)},'btn ghost small'));
   input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!completed){e.preventDefault();actions.querySelector('.btn.small')?.click()}});
   area.append(wrapper);
