@@ -109,5 +109,4 @@ const endReviewButton=btn('✓ Закріпити розділ',()=>ep21OpenChap
 $('readerProgress')?.after(endReviewButton);
 const priorLayout23=layoutPages;
 layoutPages=function(...args){const result=priorLayout23(...args);const eligible=book&&words.some(w=>ep181Studied(w)&&w.meaning&&w.p20Location?.bookId===book.id&&Number(w.p20Location.chapter)===chapter);endReviewButton.hidden=!(eligible&&page>=chapterPages-1);return result;};
-const footer=document.querySelector('.app > footer.footnote');if(footer)footer.textContent='English Pocket 23.0 · A2+ → B1 · Книги й особисті картки залишаються приватними';
 })();

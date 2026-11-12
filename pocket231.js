@@ -171,5 +171,4 @@
  };
  if(window.EnglishPocket21)window.EnglishPocket21.stories=ep21StoryReady;
  window.EnglishPocket231={version:'23.1',select:pickCards,studied,session,reset:clearSession,story:()=>story,storyProgress};
- const footer=document.querySelector('.app > footer.footnote');if(footer)footer.textContent=footer.textContent.replace('23.0','23.1');
 })();

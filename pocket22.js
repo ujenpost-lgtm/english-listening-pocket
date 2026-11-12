@@ -245,6 +245,5 @@ ep21OpenChapterReview=function(){originalChapterReview();if(!book)return;const p
 // 13. Backup bridge: the existing full backup exports all elp-* keys, including
 // these new fields. Preserve fresh content after importing a backup.
 q('backToLibrary')?.addEventListener('click',clearSpeechGlow);
-const f=document.querySelector('.app > footer.footnote');if(f)f.textContent='English Pocket 22.1 · A2+ → B1 · Приватний словник і книги на твоєму пристрої';
 EP22.dictionaryLookup=offlineLookup;EP22.voiceChoice=preferredVoice;EP22.voiceScore=maleScore;
 })();

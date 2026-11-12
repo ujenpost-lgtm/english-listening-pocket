@@ -1,4 +1,4 @@
-/* English Pocket 24.0: local adaptive journey, fixed/custom story, phrase detective,
+/* English Pocket 24.0.1: local adaptive journey, fixed/custom story, phrase detective,
    continuous reading and video notebook. No generated vocabulary, AI or remote lookup. */
 'use strict';
 (()=>{
@@ -210,6 +210,6 @@ listeningChallenge.addEventListener('toggle',()=>{if(listeningChallenge.open&&!l
 // Reuse the existing guided video panel, adding the exact-source notebook bridge.
 const oldVideoPractice=ep17VideoPractice;ep17VideoPractice=function(v){oldVideoPractice(v);if(parseVideo(v.url))D('ep17VideoPractice').append(B('Зберегти момент у блокнот',()=>{notebook.open=true;drawNotebook(v);notebook.scrollIntoView({block:'start'})},'btn alt small'))};
 // The official videos and links stay explicit; no auto playing, hidden network calls or scraping.
-window.EnglishPocket24={version:'24.0',plan,learned,pick,judge,phraseAt,bookStats,parseVideo,parseTime,story:activeStory,storyMatches,startNarration,stopNarration,renderTask,drawJourney,drawNotebook};
+window.EnglishPocket24={version:'24.0.1',plan,learned,pick,judge,phraseAt,bookStats,parseVideo,parseTime,story:activeStory,storyMatches,startNarration,stopNarration,renderTask,drawJourney,drawNotebook};
 drawJourney();drawVideos();drawShelf();
 })();

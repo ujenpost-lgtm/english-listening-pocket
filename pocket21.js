@@ -248,5 +248,4 @@ ep21CanadaDetails.addEventListener('toggle',()=>{if(ep21CanadaDetails.open)ep21D
 const ep21PreviousReset=ep181ResetWords;
 ep181ResetWords=function(items){for(const w of items){delete w.ep21Grammar;}EP21.clinic=null;EP21.weekly=null;localStorage.removeItem(EP21_WEEK_KEY);ep21PreviousReset(items);if(ep21Hub.open)ep21DrawHub()};
 // Keep written instructions and mobile footer accurate.
-const foot=document.querySelector('.app > footer.footnote');if(foot)foot.textContent='English Pocket 21.0 · A2+ → B1 · Книги й картки зберігаються на пристрої · Без AI API';
 window.EnglishPocket21={judge:ep21Judge,oneEdit:ep21OneEdit,clinic:ep21ClinicPool,stories:ep21StoryReady,pairs:ep21EligiblePairs,quality:ep21QualityIssues,chapter:ep21ChapterCards,branches:EP21_BRANCHES,weekly:ep21GetWeek};
