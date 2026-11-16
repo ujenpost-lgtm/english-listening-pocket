@@ -11,7 +11,7 @@
  let recall=null;
  function studied(){return words.filter(w=>ep181Studied(w)&&clean(w.text)&&clean(w.meaning))}
  function difficult(w){return ep202Hard(w)||ep203Weak(w,'recall')}
- function score(w){const due=Number(w.srs?.due||0);return ep203Priority(w,'context')+(difficult(w)?40:0)+(due&&due<Date.now()?10:0)}
+ function score(w){const due=Number(w.srs?.due||0);return ep203Priority(w,'context')+(difficult(w)?40:0)+(due&&due<Date.now()?30:0)-(Date.now()-(Number(ep202State(w).lastShownAt)||0)<300000?90:0)}
  function pickCards(){
   const pool=studied(),hard=pool.filter(difficult).sort((a,b)=>score(b)-score(a)),regular=pool.filter(w=>!difficult(w)).sort((a,b)=>score(b)-score(a));
   const n=Math.min(6,pool.length),quota=Math.min(hard.length,Math.ceil(n*.75));
@@ -19,11 +19,11 @@
   for(const w of [...regular,...hard.slice(quota)]){if(chosen.length>=n)break;chosen.push(w)}
   return chosen.map(w=>w.id);
  }
- function freshSession(){const ids=pickCards();return {day:dateKey(),initial:ids,queue:[...ids],index:0,retry:[],answers:[],finished:false,round:Math.max(1,Number(recall?.round||0)+1)};}
+ function freshSession(){const ids=pickCards();for(const w of studied().filter(w=>ids.includes(w.id)))w.ep202Focus={...ep202State(w),lastShownAt:Date.now()};if(ids.length)putLS(K.words,words);return {day:dateKey(),initial:ids,queue:[...ids],index:0,retry:[],answers:[],finished:false,round:Math.max(1,Number(recall?.round||0)+1)};}
  function session(){
   const available=new Set(studied().map(w=>w.id));
   if(!recall){const old=parseLS(RECALL_KEY,null);if(old&&typeof old==='object'&&Array.isArray(old.initial)&&Array.isArray(old.queue))recall=old;}
-  if(!recall||recall.day!==dateKey()||recall.initial.some(id=>!available.has(id))||recall.queue.some(id=>!available.has(id)))recall=freshSession();
+  if(!recall||(recall.finished&&recall.day!==dateKey())||recall.initial.some(id=>!available.has(id))||recall.queue.some(id=>!available.has(id)))recall=freshSession();
   if(recall.index>recall.queue.length||recall.index<0)recall=freshSession();
   putLS(RECALL_KEY,recall);return recall;
  }

@@ -164,7 +164,7 @@ function offlineMeaning(value){
 }
 function readerLookup(value,context=''){
  if(!book)return;
- const text=clean(value);if(text.length<2||text.length>800)return;
+ const text=clean(value);if(text.length<1||text.length>800)return;
  closeReaderMenus();trayValue={text,context,source:'book:'+book.title};
  $('trayHeading').textContent=/[.!?](?:\s|$)/.test(text)||text.split(/\s+/).length>=9?'Речення':text.includes(' ')?'Фраза':'Слово';
  $('traySelected').textContent=text;
@@ -212,7 +212,7 @@ $('pageText').addEventListener('click',e=>{
  const txt=range.startContainer.textContent,o=range.startOffset,letter=/[\p{L}\p{M}\p{N}'’\-]/u;
  let a=o,b=o;while(a>0&&letter.test(txt[a-1]))a--;while(b<txt.length&&letter.test(txt[b]))b++;
  const word=txt.slice(a,b).replace(/^[-'’]+|[-'’]+$/g,'');
- if(word.length>=2)readerLookup(word,selectionContext(word,range.startContainer.parentElement));
+ if(word.length>=1)readerLookup(word,selectionContext(word,range.startContainer.parentElement));
 },true);
 document.addEventListener('selectionchange',()=>{
  clearTimeout(selectTimer);if(!book||$('bookview').hidden)return;

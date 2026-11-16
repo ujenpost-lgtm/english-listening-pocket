@@ -14,19 +14,20 @@ const sentences=text=>{try{return [...new Intl.Segmenter('en',{granularity:'sent
 const tokens=s=>String(s).trim().split(/\s+/).filter(Boolean);
 function cueFor(w){return ep201Context(w)}
 function buildable(w){const c=cueFor(w),n=tokens(c.example||'').length;return !!c.masked&&n>=3&&n<=18;}
-function priority(w,kind){const mode=kind==='audio'?'audio':kind==='use'||kind==='builder'?'speak':'context';return ep203Priority(w,mode)+(ep203Weak(w,kind==='audio'?'listening':kind==='use'||kind==='builder'?'usage':'recall')?60:0)}
-function rankKind(w){const kinds=['recall','audio',...(buildable(w)?['builder']:[]),'use'];if(!('speechSynthesis'in window))kinds.splice(kinds.indexOf('audio'),1);return kinds.sort((a,b)=>priority(w,b)-priority(w,a)||({recall:0,audio:1,builder:2,use:3}[a]-{recall:0,audio:1,builder:2,use:3}[b]))[0]}
+function priority(w,kind){const type=kind==='audio'?'listening':kind==='use'||kind==='builder'?'usage':'recall',s=ep203One(w,type),focus=ep202State(w),now=Date.now();const hours=Math.max(0,(now-(Number(s.lastAt)||0))/3600000),due=Number(w.srs?.due)||0;return (ep203Weak(w,type)?90:0)+(ep202Hard(w)?24:0)+(due<=now?30:0)+Math.min(28,Math.max(0,Number(s.misses)||0)*4)+(s.attempts?0:20)+Math.min(25,hours/24*4)-(hours<.15?45:0)-(now-(Number(focus.lastShownAt)||0)<300000?20:0)}
+function rankKind(w){const kinds=['recall',...(('speechSynthesis'in window)?['audio']:[]),...(buildable(w)?['builder']:[]),'use'];return kinds.sort((a,b)=>priority(w,b)-priority(w,a)||({recall:0,audio:1,builder:2,use:3}[a]-{recall:0,audio:1,builder:2,use:3}[b]))[0]}
 function pick(n,kind=null,pool=learned()){
- const order=[...pool].sort((a,b)=>priority(b,kind||rankKind(b))-priority(a,kind||rankKind(a))||Number(ep202State(a).lastAt||0)-Number(ep202State(b).lastAt||0));
- const hard=order.filter(w=>ep202Hard(w)||['recall','listening','usage'].some(k=>ep203Weak(w,k))), rest=order.filter(w=>!hard.includes(w));
- const count=Math.min(n,order.length),quota=Math.min(hard.length,Math.ceil(count*.8));return [...hard.slice(0,quota),...rest,...hard.slice(quota)].slice(0,count);
+ const eligible=pool.filter(w=>ep181Studied(w)&&clean(w.meaning)&&clean(w.text));const now=Date.now(),recent=w=>now-(Number(ep202State(w).lastShownAt)||0)<300000;
+ const order=[...eligible].sort((a,b)=>priority(b,kind||rankKind(b))-priority(a,kind||rankKind(a))||Number(ep202State(a).lastShownAt||0)-Number(ep202State(b).lastShownAt||0));
+ const hard=order.filter(w=>ep202Hard(w)||['recall','listening','usage'].some(k=>ep203Weak(w,k))||Number(w.srs?.due||0)<=now),rest=order.filter(w=>!hard.includes(w));const count=Math.min(n,order.length),quota=Math.min(hard.length,Math.ceil(count*.75));
+ const ordered=[...hard.slice(0,quota),...rest,...hard.slice(quota)];return [...ordered.filter(w=>!recent(w)),...ordered.filter(recent)].slice(0,count);
 }
 function task(w,kind){const cue=cueFor(w);return {id:w.id,kind,text:w.text,meaning:w.meaning,example:cue.example||'',masked:cue.masked||'',surface:cue.surface||w.text};}
 function plan(minutes=15){const pool=learned(),n=minutes===5?3:6,selected=pick(n,null,pool),tasks=selected.map(w=>task(w,rankKind(w)));
  // Ensure a mix when a longer session has enough cards. Use real contexts only.
  if(tasks.length>=3&&minutes!==5){const hasAudio=tasks.some(t=>t.kind==='audio');if(!hasAudio&&'speechSynthesis'in window){const w=selected.at(-1);tasks[tasks.length-1]=task(w,'audio')}
  const i=selected.findIndex((w,j)=>buildable(w)&&tasks[j].kind!=='audio');if(i>=0&&!tasks.some(t=>t.kind==='builder'))tasks[i]=task(selected[i],'builder');}
- return {day:dateKey(),minutes,tasks,index:0,answers:[],retry:[],finished:false,storyDone:false,readDone:false,created:Date.now()};}
+ for(const w of selected)w.ep202Focus={...ep202State(w),lastShownAt:Date.now()};if(selected.length)putLS(K.words,words);return {day:dateKey(),minutes,tasks,index:0,answers:[],retry:[],finished:false,storyDone:false,readDone:false,created:Date.now()};}
 function record(w,kind,ok,assisted=false){
  // An assisted answer does not count as independent retrieval. Track separately,
  // but use the existing failure/review machinery so the card returns in practice.
@@ -37,7 +38,7 @@ function record(w,kind,ok,assisted=false){
 function judge(value,t,w){const x=norm(value);if(!x)return 'empty';const targets=t.kind==='builder'?[t.example]:t.kind==='recall'&&t.masked?[t.surface]:[w.text,...ep21Alternatives(w)];if(targets.some(y=>norm(y)===x))return 'correct';if(targets.some(y=>ep21OneEdit(x,norm(y))))return 'typo';return 'wrong';}
 function makeHints(answer,box,fn){let level=0;const btn=B('Підказка',()=>{level++;fn(level);const a=tokens(answer);box.textContent=level===1?a.map(x=>x[0]+'…').join(' '):level===2&&a.length>1?a[0]+' '+a.slice(1).map(x=>x[0]+'…').join(' '):answer;btn.disabled=level>=3;});return btn}
 // One task component for daily mission, phrase workout and video listening.
-function renderTask(host,t,done,options={}){host.replaceChildren();const w=find(t.id);if(!w){done({skipped:true})?.();return}
+function renderTask(host,t,done,options={}){host.replaceChildren();const w=find(t.id);if(!w||norm(w.text)!==norm(t.text)){done({skipped:true})?.();return}
  const label={recall:'Пригадай фразу',audio:'Послухай і запиши',builder:'Склади речення',use:'Використай фразу'}[t.kind];host.append(E('h3','',label));let helped=false,settled=false,typos=0;
  const feedback=E('p','ep24-feedback');feedback.setAttribute('aria-live','polite');const hint=E('p','ep24-hint');const controls=E('div','row wrap');let input=null,answer=t.kind==='builder'?t.example:t.kind==='recall'&&t.masked?t.surface:w.text;
  function finish(ok,reveal=false){if(settled)return;if(!find(t.id)){settled=true;feedback.textContent='Картка більше не доступна для практики.';host.querySelectorAll('button,input,textarea').forEach(x=>x.disabled=true);const next=done({skipped:true});controls.replaceChildren(B('Далі →',()=>next?.(),'btn small'));return}settled=true;if(reveal){w.ep24Hints={...(w.ep24Hints||{}),revealed:(w.ep24Hints?.revealed||0)+1}}
@@ -68,7 +69,7 @@ function renderTask(host,t,done,options={}){host.replaceChildren();const w=find(
 const journey=E('div','box ep24-journey');journey.id='ep24Journey';D('p20Coach').before(journey);
 const journeyTask=E('div','ep24-task');journeyTask.id='ep24JourneyTask';journeyTask.hidden=true;journey.after(journeyTask);
 let j=null,journeyActive=false;
-function getJourney(){const saved=read(JKEY,null);if(!j||j.day!==dateKey()&&!journeyActive)j=saved?.day===dateKey()&&Array.isArray(saved.tasks)?saved:null;if(j&&j.tasks.some(t=>!find(t.id))){j=null;write(JKEY,null)}return j}
+function getJourney(){const saved=read(JKEY,null);if(!j||j.finished&&j.day!==dateKey()&&!journeyActive)j=saved&&Array.isArray(saved.tasks)&&(!saved.finished||saved.day===dateKey())?saved:null;if(j&&j.tasks.some(t=>!find(t.id))){j=null;write(JKEY,null)}return j}
 function saveJ(){write(JKEY,j)}
 function showJourneyTask(){if(!j)return;journeyTask.hidden=false;journeyActive=true;journeyTask.replaceChildren();
  if(j.index>=j.tasks.length){j.finished=true;saveJ();journeyActive=false;journeyTask.hidden=true;drawJourney();return}
@@ -77,8 +78,8 @@ function showJourneyTask(){if(!j)return;journeyTask.hidden=false;journeyActive=t
 }
 function goStory(){nav('words');chooseWordTab('review');D('ep21Hub').open=true;ep21Mode='stories';ep21DrawHub();D('ep21Hub')?.scrollIntoView({block:'start'});ep21Display.scrollIntoView({block:'start'});}
 function drawJourney(){getJourney();journey.replaceChildren();const header=E('div','row between wrap');header.append(E('strong','ep24-title','Твоя англійська сьогодні'),E('span','ep24-pill','A2+ → B1'));journey.append(header);
- if(!learned().length){journey.append(E('p','smallhint','Спочатку вивчи свої картки у звичайному уроці. Місія відкриється після навчання.'));return}
- if(!j){journey.append(E('p','smallhint','Одна коротка практика зі своїх карток: пригадування, слухання, речення. Складні — першими.'));const row=E('div','row wrap');row.append(B('Почати · 15 хв',()=>{j=plan(15);saveJ();drawJourney();showJourneyTask()},'btn'),B('Лише 5 хв',()=>{j=plan(5);saveJ();drawJourney();showJourneyTask()}));journey.append(row);return}
+ const counts=E('div','ep243-counts');const pool=learned(),due=pool.filter(w=>Number(w.srs?.due||0)<=Date.now()).length,weakCount=pool.filter(w=>ep202Hard(w)||['recall','listening','usage'].some(k=>ep203Weak(w,k))).length;counts.append(E('span','','До повторення: '+due),E('span','','Складні: '+weakCount),E('span','','Вивчено: '+pool.length),E('span','','Нові: '+words.filter(w=>clean(w.meaning)&&!ep181Studied(w)).length));journey.append(counts);if(!learned().length){journey.append(E('p','smallhint','Спочатку вивчи свої картки у звичайному уроці. Місія відкриється після навчання.'));return}
+ if(!j){journey.append(E('p','smallhint','Одна коротка практика зі своїх карток: пригадування, слухання, речення. Складні — першими.'));const row=E('div','row wrap');if(due)row.append(B('↻ Повторити за розкладом',()=>{launchDue();D('lessonFlow').scrollIntoView({block:'start'})},'btn alt small'));row.append(B('Почати · 15 хв',()=>{j=plan(15);saveJ();drawJourney();showJourneyTask()},'btn'),B('Лише 5 хв',()=>{j=plan(5);saveJ();drawJourney();showJourneyTask()}));journey.append(row);return}
  const first=j.answers.filter(x=>!x.retry&&!x.skipped),good=first.filter(x=>x.ok&&!x.assisted).length,assisted=first.filter(x=>x.assisted).length;
  const bar=E('div','ep24-track'),fill=E('div');fill.style.width=Math.round(j.index/Math.max(1,j.tasks.length)*100)+'%';bar.append(fill);journey.append(bar,E('p','smallhint',j.finished?`Місія завершена · самостійно ${good}/${first.length} · з підказкою ${assisted}`:`Виконано ${j.index}/${j.tasks.length} вправ · ${j.minutes} хв орієнтовно`));
  if(!j.finished){if(!journeyActive)journey.append(B('Продовжити місію →',showJourneyTask,'btn'));return}
@@ -148,7 +149,7 @@ document.addEventListener('click',e=>{tap=null;if(!book||D('bookview').hidden||!
 },true);
 const prevLookup=readerLookup;readerLookup=function(value,context=''){
  const f=tap;tap=null;if(f&&Date.now()-f.at<1000&&plain(value)===plain(f.clicked)&&!clean(value).includes(' ')){
-  prevLookup(f.text,f.context||context);if(trayValue){D('trayMeaning').value=wordMatch(f.text)?.meaning||wordMatch(f.root)?.meaning||f.meaning;D('trayStatus').textContent='Можлива стала фраза в цьому контексті · перевір значення';const alternative=E('button','btn ghost small','Лише '+f.clicked);alternative.type='button';alternative.id='ep24SingleWord';alternative.onclick=()=>{alternative.remove();prevLookup(f.clicked,f.context||context)};D('translationTray').querySelector('#ep24SingleWord')?.remove();D('trayStatus').after(alternative)}return
+  prevLookup(f.text,f.context||context);if(trayValue){D('trayMeaning').value=wordMatch(f.text)?.meaning||wordMatch(f.root)?.meaning||f.meaning;D('trayStatus').textContent='Можлива стала фраза в цьому контексті · перевір значення';const alternative=E('button','btn ghost small','Лише '+f.clicked);alternative.type='button';alternative.id='ep24SingleWord';alternative.onclick=()=>{alternative.remove();readerLookup(f.clicked,f.context||context)};D('translationTray').querySelector('#ep24SingleWord')?.remove();D('trayStatus').after(alternative)}return
  }
  D('ep24SingleWord')?.remove();return prevLookup(value,context)
 };

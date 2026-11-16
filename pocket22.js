@@ -136,7 +136,7 @@ function animatePage(direction){if(!book||ui.animation===false||window.matchMedi
  const copy=text.cloneNode(true);copy.id='';copy.className+=' ep22-flip-copy';copy.style.width=text.clientWidth+'px';copy.style.height=text.clientHeight+'px';copy.style.overflow='hidden';overlay.append(copy);box.append(overlay);copy.scrollLeft=text.scrollLeft;
  if(flipCleanup)clearTimeout(flipCleanup);flipCleanup=setTimeout(()=>overlay.remove(),490);
 }
-turn=function(direction){try{animatePage(direction)}catch{}return originalTurn22(direction)};
+turn=function(direction){return originalTurn22(direction)};
 // 6. Inline reader preferences: one simple animation toggle in settings.
 const flipWrap=mk('label','ep22-toggle'),flipInput=mk('input');flipInput.type='checkbox';flipInput.checked=ui.animation!==false;flipInput.onchange=()=>{ui.animation=flipInput.checked;save(EP22.prefKey,ui)};
 add(flipWrap,flipInput,mk('span','','Гортання з ефектом книги'));settingsTarget?.prepend(flipWrap);
