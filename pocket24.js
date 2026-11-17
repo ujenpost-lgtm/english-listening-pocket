@@ -141,14 +141,14 @@ function phraseAt(text,offset,dict=glossary()){
 }
 const readerRegion=D('pageText');let tap=null;
 // The older capture listener stops propagation; register ahead of lookup at document level.
-document.addEventListener('click',e=>{tap=null;if(!book||D('bookview').hidden||!readerRegion.contains(e.target)||window.getSelection()?.toString().trim())return;
+document.addEventListener('click',e=>{tap=null;if(window.EP244?.active||!book||D('bookview').hidden||!readerRegion.contains(e.target)||window.getSelection()?.toString().trim())return;
  let r=document.caretRangeFromPoint?.(e.clientX,e.clientY);if(!r){const p=document.caretPositionFromPoint?.(e.clientX,e.clientY);if(p){r=document.createRange();r.setStart(p.offsetNode,p.offset);r.collapse(true)}}
  if(!r||r.startContainer.nodeType!==3||!readerRegion.contains(r.startContainer))return;
  const p=r.startContainer.parentElement.closest('p,li,blockquote,h1,h2,h3,h4')||r.startContainer.parentElement;const before=document.createRange();before.selectNodeContents(p);try{before.setEnd(r.startContainer,r.startOffset)}catch{return}
  const phrase=phraseAt(p.textContent,before.toString().length);if(phrase)tap={...phrase,context:selectionContext(phrase.text,p),at:Date.now()};
 },true);
 const prevLookup=readerLookup;readerLookup=function(value,context=''){
- const f=tap;tap=null;if(f&&Date.now()-f.at<1000&&plain(value)===plain(f.clicked)&&!clean(value).includes(' ')){
+ const f=tap;tap=null;if(!window.EP244?.active&&f&&Date.now()-f.at<1000&&plain(value)===plain(f.clicked)&&!clean(value).includes(' ')){
   prevLookup(f.text,f.context||context);if(trayValue){D('trayMeaning').value=wordMatch(f.text)?.meaning||wordMatch(f.root)?.meaning||f.meaning;D('trayStatus').textContent='Можлива стала фраза в цьому контексті · перевір значення';const alternative=E('button','btn ghost small','Лише '+f.clicked);alternative.type='button';alternative.id='ep24SingleWord';alternative.onclick=()=>{alternative.remove();readerLookup(f.clicked,f.context||context)};D('translationTray').querySelector('#ep24SingleWord')?.remove();D('trayStatus').after(alternative)}return
  }
  D('ep24SingleWord')?.remove();return prevLookup(value,context)

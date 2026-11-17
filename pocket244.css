@@ -1,0 +1,31 @@
+/* English Pocket 24.3.1: no OS text-selection toolbar inside book pages.
+   Controls, translation textarea, dictionary import and other tabs stay selectable. */
+body.book-reading #pageText,body.book-reading #pageText *{
+  -webkit-user-select:none!important;user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+body.book-reading #pageText{touch-action:pan-y;cursor:pointer}
+#pageWindow .ep244-marks{position:absolute;inset:0;z-index:46;pointer-events:none;overflow:hidden}
+#pageWindow .ep244-mark{position:absolute;border-radius:3px;background:rgba(47,166,226,.35);box-shadow:inset 0 -2px 0 #4cc9f0;pointer-events:none}
+.ep244-pick-banner{position:fixed;z-index:400;top:calc(4px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);width:min(620px,calc(100vw - 16px));
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:8px 10px;border-radius:12px;background:#11283c;color:#f4fbff;
+  border:1px solid #5797bb;box-shadow:0 8px 24px #0007;font-size:13px;font-weight:700}
+.ep244-pick-banner .btn{white-space:nowrap;padding:6px 10px;min-height:34px}
+#translationTray .ep244-modes{display:flex;gap:6px;flex-wrap:nowrap;margin:7px 0 8px;overflow-x:auto;scrollbar-width:none}
+#translationTray .ep244-modes::-webkit-scrollbar{display:none}
+#translationTray .ep244-modes .btn{flex:1;white-space:nowrap;border-radius:10px;min-height:36px;padding:7px 9px;font-size:12px}
+#translationTray .ep244-modes .ep244-mode-active{background:#58bce9;border-color:#58bce9;color:#092035}
+#translationTray{max-height:min(61dvh,540px)!important;overflow:auto!important;scrollbar-width:thin}
+#translationTray .tray-selected{font-size:15px!important;max-height:95px!important;overflow:auto}
+#translationTray #trayMeaning{min-height:57px;max-height:130px;resize:vertical}
+#translationTray .tray-actions{gap:5px}
+#translationTray .tray-actions .btn{font-size:12px;min-height:34px;padding:6px 8px}
+@media(max-width:550px){
+  #translationTray{width:calc(100vw - 14px);bottom:calc(49px + env(safe-area-inset-bottom,0px));
+    padding:10px 11px;max-height:56dvh!important}
+  #translationTray .ep244-modes .btn{padding:8px 7px;font-size:12px}
+  .ep244-pick-banner{top:calc(3px + env(safe-area-inset-top,0px))}
+}
+/* The new Sentence chip replaces the legacy duplicate sentence action. */
+#translationTray #ep17Sentence{display:none!important}
