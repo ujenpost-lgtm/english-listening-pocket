@@ -33,7 +33,7 @@ function record(w,kind,ok,assisted=false){
  // but use the existing failure/review machinery so the card returns in practice.
  const old=w.ep24Hints||{used:0,revealed:0,independent:0};w.ep24Hints={...old,used:(old.used||0)+(assisted?1:0),independent:(old.independent||0)+(ok&&!assisted?1:0)};
  const tag=kind==='audio'?'audio':kind==='use'||kind==='builder'?'p20-use':'context';
- ep202Record(w,ok&&!assisted,tag);ep17Recall(w,ok&&!assisted,'ep24-'+kind);trackPractice(ok&&!assisted,tag);saveWords();
+ ep202Record(w,ok&&!assisted,tag,{assisted:!!assisted});ep17Recall(w,ok&&!assisted,'ep24-'+kind);trackPractice(ok&&!assisted,tag);saveWords();
 }
 function judge(value,t,w){const x=norm(value);if(!x)return 'empty';const targets=t.kind==='builder'?[t.example]:t.kind==='recall'&&t.masked?[t.surface]:[w.text,...ep21Alternatives(w)];if(targets.some(y=>norm(y)===x))return 'correct';if(targets.some(y=>ep21OneEdit(x,norm(y))))return 'typo';return 'wrong';}
 function makeHints(answer,box,fn){let level=0;const btn=B('Підказка',()=>{level++;fn(level);const a=tokens(answer);box.textContent=level===1?a.map(x=>x[0]+'…').join(' '):level===2&&a.length>1?a[0]+' '+a.slice(1).map(x=>x[0]+'…').join(' '):answer;btn.disabled=level>=3;});return btn}
