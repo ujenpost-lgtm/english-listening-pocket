@@ -69,7 +69,7 @@ function ep202NewBatch(){
 }
 function ep202Batch(){
  const available=new Set(ep202Pool().map(w=>w.id));
- if(!available.size){EP202.session=null;localStorage.removeItem(EP202.sessionKey);return []}
+ if(!available.size){EP202.session=null;EPStore.removeItem(EP202.sessionKey);return []}
  if(!EP202.session){const stored=parseLS(EP202.sessionKey,null);
   if(stored&&stored.day===dateKey()&&Array.isArray(stored.ids)&&stored.ids.some(id=>available.has(id)))EP202.session=stored;
  }
@@ -113,10 +113,10 @@ ep17Recall=function(w,ok,kind){ep202OldRecall(w,ok,kind);
 // A deliberate reset must also reset focus records and invalidate the current selection.
 const ep202OldReset=ep181ResetWords;
 ep181ResetWords=function(items){for(const w of items)delete w.ep202Focus;
- EP202.session=null;localStorage.removeItem(EP202.sessionKey);ep202OldReset(items)
+ EP202.session=null;EPStore.removeItem(EP202.sessionKey);ep202OldReset(items)
 };
 const ep202OldComplete=l16Complete;
-l16Complete=function(){EP202.session=null;localStorage.removeItem(EP202.sessionKey);ep202OldComplete()};
+l16Complete=function(){EP202.session=null;EPStore.removeItem(EP202.sessionKey);ep202OldComplete()};
 // Nonintrusive hint: explain why today's exercises select these phrases.
 ep18UpdateFocus=function(){
  const label=$('ep18FocusLabel');if(!label)return;

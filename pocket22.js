@@ -4,8 +4,8 @@
 (()=>{
 const q=id=>document.getElementById(id), mk=(tag,cls='',text='')=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text)n.textContent=text;return n},
     add=(p,...els)=>{p.append(...els);return p},
-    ls=(key,def)=>{try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):def}catch{return def}},
-    save=(key,val)=>localStorage.setItem(key,JSON.stringify(val));
+    ls=(key,def)=>{try{const raw=EPStore.getItem(key);return raw?JSON.parse(raw):def}catch{return def}},
+    save=(key,val)=>EPStore.setItem(key,JSON.stringify(val));
 const EP22={version:'22.1',voiceKey:'elp-22-voice',prefKey:'elp-22-ui',videoKey:'elp-22-video-path',chapterKey:'elp-22-chapter-learning',userVoice:'',flipTimer:null,flipBusy:false,audio:null};
 window.EP22=EP22;
 const norm=s=>String(s||'').normalize('NFKC').toLocaleLowerCase('en').replace(/[’‘]/g,"'").replace(/^[\s.,!?;:"“”()]+|[\s.,!?;:"“”()]+$/g,'').replace(/\s+/g,' ').trim();
@@ -25,13 +25,13 @@ const maleNames=/\b(male|guy|david|ryan|christopher|andrew|daniel|aaron|arthur|a
 const femaleNames=/\b(female|zira|hazel|susan|samantha|victoria|aria|jenny|serena|ava|siri|allison|emily|emma|karen|moira|fiona|kate|sara|heather|catherine|natasha|sonia)\b/i;
 const voiceBox=mk('div','ep22-voice-settings'),vLabel=mk('label','','Голос англійською'),vSelect=mk('select','input'),vHint=mk('p','smallhint','За замовчуванням — чоловічий, якщо він є серед голосів телефона. Послухай і вибери найприємніший.'),vTry=mk('button','btn alt small','🔊 Послухати приклад');
 const oldRate=()=>typeof EP17!=='undefined'?EP17.rate:.9;
-EP22.userVoice=localStorage.getItem(EP22.voiceKey)||'';
+EP22.userVoice=EPStore.getItem(EP22.voiceKey)||'';
 const voiceMigrationKey='elp-221-male-preference';
-if(!localStorage.getItem(voiceMigrationKey)){
+if(!EPStore.getItem(voiceMigrationKey)){
   // The last version could preserve an automatically assigned female voice.
   // Reset just the old voice choice once so the new male-first preference applies.
-  EP22.userVoice=''; localStorage.removeItem(EP22.voiceKey);
-  localStorage.setItem(voiceMigrationKey,'1');
+  EP22.userVoice=''; EPStore.removeItem(EP22.voiceKey);
+  EPStore.setItem(voiceMigrationKey,'1');
 }
 function voices(){if(!('speechSynthesis' in window))return[];return speechSynthesis.getVoices().filter(v=>/^en(?:-|_)/i.test(v.lang));}
 function maleScore(v){const n=v.name||'';let sc=0;if(maleNames.test(n))sc+=100;if(femaleNames.test(n))sc-=120;
@@ -54,7 +54,7 @@ function speech(text,opt={}){if(!('speechSynthesis'in window)||typeof SpeechSynt
  if(v){u.voice=v;u.lang=v.lang}else u.lang='en-CA';
  u.rate=Math.min(1.1,Math.max(.72,oldRate()));u.pitch=1;
  u.onend=next;u.onerror=e=>{if(!['interrupted','canceled'].includes(e.error))toast('Не вдалося озвучити текст');opt.onDone?.()};speechSynthesis.speak(u)}next();}
-vSelect.onchange=()=>{EP22.userVoice=vSelect.value;localStorage.setItem(EP22.voiceKey,EP22.userVoice)};
+vSelect.onchange=()=>{EP22.userVoice=vSelect.value;EPStore.setItem(EP22.voiceKey,EP22.userVoice)};
 vTry.onclick=()=>speech('Hi! Welcome to English Pocket. Let us practise everyday English together.');
 add(voiceBox,vLabel,vSelect,vHint,vTry);if(settingsTarget)settingsTarget.prepend(voiceBox);
 renderVoices();q('settingsButton')?.addEventListener('click',()=>setTimeout(renderVoices,80));

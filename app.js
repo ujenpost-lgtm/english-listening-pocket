@@ -2,8 +2,8 @@
 'use strict';
 const $=id=>document.getElementById(id);
 const K={words:'elp-words-v2',reader:'elp-reader-settings-v2',lastBook:'elp-last-book-v2',daily:'elp-13-daily',videos:'elp-13-videos',reviewConfig:'elp-14-review-config',practiceLog:'elp-14-practice-log',lesson:'elp-15-focused-lesson'};
-const parseLS=(key,fallback)=>{try{const v=JSON.parse(localStorage.getItem(key));return v??fallback}catch{return fallback}};
-const putLS=(key,obj)=>{try{localStorage.setItem(key,JSON.stringify(obj));return true}catch{toast('Не вистачає місця. Збережи резервну копію.');return false}};
+const parseLS=(key,fallback)=>{try{const v=JSON.parse(EPStore.getItem(key));return v??fallback}catch{return fallback}};
+const putLS=(key,obj)=>{try{EPStore.setItem(key,JSON.stringify(obj));return true}catch{toast('Не вистачає місця. Збережи резервну копію.');return false}};
 const uuid=()=>typeof crypto.randomUUID==='function'?crypto.randomUUID():'pocket-'+Date.now()+'-'+Math.random().toString(36).slice(2);
 const node=(tag,cls='',value)=>{const el=document.createElement(tag);if(cls)el.className=cls;if(value!==undefined)el.textContent=value;return el};
 const BTN=(txt,fn,cls='btn alt small')=>{const b=node('button',cls,txt);b.type='button';b.addEventListener('click',fn);return b};
@@ -180,7 +180,7 @@ function drawPractice(){
 }
 
 // Same IndexedDB book store as v11/12: existing books and positions are kept.
-function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open('english-pocket-library',1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('books'))req.result.createObjectStore('books',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
+function openDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(EPProfiles.dbName('english-pocket-library'),1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('books'))req.result.createObjectStore('books',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)})}
 async function dbOp(mode,cb){const db=await openDB();return new Promise((resolve,reject)=>{let tx=db.transaction('books',mode),req=cb(tx.objectStore('books'));req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);tx.oncomplete=()=>db.close();tx.onerror=()=>reject(tx.error)})}
 const dbList=()=>dbOp('readonly',st=>st.getAll());const dbGet=id=>dbOp('readonly',st=>st.get(id));const dbPut=b=>dbOp('readwrite',st=>st.put(b));const dbDelete=id=>dbOp('readwrite',st=>st.delete(id));
 function plainHtml(input){let doc=new DOMParser().parseFromString(input,'text/html');doc.querySelectorAll('script,style,iframe,svg,noscript,nav,footer,form').forEach(x=>x.remove());let ps=[...doc.body.querySelectorAll('h1,h2,h3,h4,p,li,blockquote,pre')].filter(x=>!x.parentElement.closest('p,li,blockquote,pre'));const vals=ps.map(x=>clean(x.textContent)).filter(Boolean);return vals.length?vals:[clean(doc.body.textContent)].filter(Boolean)}
@@ -480,48 +480,80 @@ function downloadJson(value,name){
  const blob=new Blob([JSON.stringify(value)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=node('a');
  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)
 }
+// Checksum covers the actual payload; we verify it again on import.
+// It protects against truncated or changed JSON, not maliciously crafted files.
+async function ep2511Checksum(payload){
+ if(!crypto?.subtle) return null;
+ const data=new TextEncoder().encode(JSON.stringify(payload));
+ const hash=new Uint8Array(await crypto.subtle.digest('SHA-256',data));
+ return Array.from(hash,b=>b.toString(16).padStart(2,'0')).join('');
+}
 $('exportBackup').onclick=async()=>{
+ const button=$('exportBackup');button.disabled=true;
+ $('settingsStatus').textContent='Готую копію книг і навчальних результатів…';
  try{
   const books=await dbList(),local={};
-  for(const key of Object.keys(localStorage))if(key.startsWith('elp-'))local[key]=localStorage.getItem(key);
-  downloadJson({app:'english-pocket',format:'vault-15',created:new Date().toISOString(),books,words,local,watched,settings},'english-pocket-full-backup-'+new Date().toISOString().slice(0,10)+'.json');
-  $('settingsStatus').textContent=`Резервна копія містить ${books.length} книг, ${words.length} карток, закладки та історію SRS.`;
- }catch(e){$('settingsStatus').textContent='Помилка створення копії: '+e.message}
+  for(const key of EPStore.keys())if(key.startsWith('elp-'))local[key]=EPStore.getItem(key);
+  const payload={books,words,local,watched,settings};
+  const checksum=await ep2511Checksum(payload);
+  const backup={app:'english-pocket',format:'vault-2511',created:new Date().toISOString(),scope:'one-device',payload,integrity:checksum?{algorithm:'SHA-256',hex:checksum}:null};
+  // Verify the serialized structure BEFORE claiming the backup succeeded.
+  const serialized=JSON.stringify(backup),check=JSON.parse(serialized);
+  if(check.payload.books.length!==books.length||check.payload.words.length!==words.length)throw Error('Перевірка вмісту не пройшла');
+  if(check.integrity&&await ep2511Checksum(check.payload)!==check.integrity.hex)throw Error('Контрольна сума не збігається');
+  if(new Blob([serialized]).size>80*1024*1024)throw Error('Копія перевищує 80 МБ і може не відновитися на телефоні. Зменш кількість великих EPUB або експортуй книги окремо.');
+  downloadJson(check,'english-pocket-device-backup-'+new Date().toISOString().slice(0,10)+'.json');
+  $('settingsStatus').textContent=`Копія готова: ${books.length} книг, ${words.length} карток, ${Object.keys(local).length} груп навчальних даних.${checksum?' Контрольну суму SHA-256 перевірено.':''} Переконайся, що браузер завантажив файл.`;
+ }catch(e){$('settingsStatus').textContent='Не вдалося створити копію. Нічого не видалено: '+e.message}
+ finally{button.disabled=false}
 };
 $('addStarterCards').onclick=()=>{const r=mergeWords(STARTER_CARDS);$('settingsStatus').textContent=`Додано ${r.added} фраз, доповнено ${r.updated}. Дублікатів немає.`;toast('Картки готові до навчання')};
 $('backupFile').onchange=async e=>{
  const f=e.target.files?.[0];if(!f)return;
  try{
   if(f.size>80*1024*1024)throw Error('Завеликий JSON. Максимум 80 МБ');
-  const data=JSON.parse(await f.text());
-  const incoming=Array.isArray(data)?data:(Array.isArray(data.words)?data.words:Array.isArray(data.cards)?data.cards:(()=>{
-   if(data.local&&typeof data.local[K.words]==='string')return JSON.parse(data.local[K.words]);return []
-  })());
+  const fileData=JSON.parse(await f.text());
+  if(fileData?.format==='vault-2511'){
+   if(!fileData.payload||typeof fileData.payload!=='object'||Array.isArray(fileData.payload))throw Error('Пошкоджена резервна копія');
+   if(fileData.integrity?.algorithm==='SHA-256'){
+    const digest=await ep2511Checksum(fileData.payload);
+    if(!digest||digest!==fileData.integrity.hex)throw Error('Копія пошкоджена або неповна: контрольна сума не збігається');
+   }else if(fileData.integrity)throw Error('Невідомий спосіб перевірки цілісності');
+  }
+  const data=fileData?.format==='vault-2511'?fileData.payload:fileData;
+  const incoming=Array.isArray(data)?data:(
+   Array.isArray(data.words)&&data.words.length?data.words:
+   Array.isArray(data.cards)&&data.cards.length?data.cards:
+   (data.local&&typeof data.local[K.words]==='string'?JSON.parse(data.local[K.words]):
+    Array.isArray(data.words)?data.words:Array.isArray(data.cards)?data.cards:[]));
   if(!Array.isArray(incoming))throw Error('Словник має бути масивом');
-  if(!Array.isArray(data)&&typeof data!=='object')throw Error('Некоректна структура JSON');
+  if(!data||(!Array.isArray(data)&&typeof data!=='object'))throw Error('Некоректна структура JSON');
   if(incoming.length>50000)throw Error('Забагато карток для імпорту');
   const invalid=incoming.filter(w=>!normalizeWord(w));if(invalid.length)throw Error(`Некоректних карток: ${invalid.length}. Імпорт скасовано.`);
   const incomingBooks=Array.isArray(data.books)?data.books:[];
   if(incomingBooks.length>1000)throw Error('Забагато книг');
   for(const b of incomingBooks)if(!b||typeof b.id!=='string'||!Array.isArray(b.chapters)||!b.chapters.length||b.chapters.length>2500||b.chapters.some(ch=>!ch||!Array.isArray(ch.paragraphs)))throw Error('Пошкоджена структура книги. Імпорт скасовано.');
-  if(!incoming.length&&!incomingBooks.length)throw Error('У JSON немає карток або книг');
+  if(!incoming.length&&!incomingBooks.length&&!(data.local&&Object.keys(data.local).some(k=>k.startsWith('elp-'))))throw Error('Немає даних для імпорту');
   const existing=await dbList(),existingIds=new Set(existing.map(x=>x.id));
   const addBooks=incomingBooks.filter(b=>!existingIds.has(b.id));
-  if(!confirm(`Додати ${incoming.length} карток та ${addBooks.length} книг? Існуючі записи збережуться, дублікати будуть пропущені.`))return;
+  if(!confirm(`Імпортувати в цей браузер? Додати ${incoming.length} карток і ${addBooks.length} книг? Наявний навчальний прогрес не буде перезаписано.`))return;
   // Pre-validate first. New books are inserted without overwriting existing ones.
   let addedBooks=0;for(const b of addBooks){await dbPut(b);addedBooks++}
   const r=mergeWords(incoming);
-  if(data.local&&typeof data.local==='object'){
-   for(const key of [K.videos,K.daily,K.practiceLog,K.reviewConfig,K.lesson,'elp-16-today-v1','elp-17-speech-rate','elp-17-canada-progress','elp-17-video-notes','elp-17-daily-check','elp-18-progress-checks','elp-18-practice','elp-18-video-lessons','elp-18-dialogues','elp-181-translation-cache','elp-181-theme','elp-21-week-session','elp-22-ui','elp-22-voice','elp-22-video-path','elp-22-chapter-learning','elp-231-recall-session','elp-231-fixed-story-progress','elp-24-journey','elp-24-story','elp-24-video-notebook','elp-24-achievements','elp-241-conversation-lab','elp-242-course','elp-242-story-archive','elp-243-video-study','elp-243-translation-cache','elp-25-week-review','elp-25-story-deep','elp-181-translate-cache']){
-    if(localStorage.getItem(key)===null&&typeof data.local[key]==='string')localStorage.setItem(key,data.local[key]);
+  let restoredKeys=0;
+  if(data.local&&typeof data.local==='object'&&!Array.isArray(data.local)){
+   // Keep the present device data intact. Restore only missing keys.
+   for(const [key,value] of Object.entries(data.local)){
+    if(!key.startsWith('elp-')||key===K.words||typeof value!=='string')continue;
+    if(EPStore.getItem(key)===null){EPStore.setItem(key,value);restoredKeys++}
    }
-   for(const key of Object.keys(data.local)){if(/^elp-241-conversation-lab-[a-z-]+$/.test(key)&&localStorage.getItem(key)===null&&typeof data.local[key]==='string')localStorage.setItem(key,data.local[key]);}
    if(data.local[K.videos]){try{watched={...JSON.parse(data.local[K.videos]),...watched};putLS(K.videos,watched)}catch{}}
   }
   if(data.watched&&typeof data.watched==='object'){watched={...data.watched,...watched};putLS(K.videos,watched)}
-  $('settingsStatus').textContent=`Готово: +${r.added} карток, доповнено ${r.updated}, +${addedBooks} книг. Дані не перезаписувалися.`;
+  $('settingsStatus').textContent=`Готово: +${r.added} карток, доповнено ${r.updated}, +${addedBooks} книг, відновлено ${restoredKeys} ключів прогресу. Наявні дані не перезаписано.`;
   if(typeof lessonState!=='undefined')lessonState=parseLS(K.lesson,null);
   drawShelf();drawWords();drawVideos();toast('Імпорт завершено');
+  if(data.local&&Object.keys(data.local).length&&confirm('Імпорт завершено. Перезапустити застосунок, щоб оновити всі навчальні модулі?'))window.location.reload();
  }catch(error){$('settingsStatus').textContent='Імпорт не завершено: '+error.message}
  finally{e.target.value=''}
 };

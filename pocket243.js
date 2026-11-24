@@ -60,7 +60,7 @@ function renderVideo(){body.replaceChildren();if(!active){const url=field('По�
 studio.addEventListener('toggle',()=>{if(studio.open&&!body.childNodes.length)renderVideo();if(!studio.open){stopPlayer();if(active)renderVideo()}});const previousNav=nav;nav=function(tab){if(tab!=='watch'&&(player||started)){stopPlayer();if(active)renderVideo()}return previousNav(tab)};
 // Use the same compact studio from catalog and the currently selected course lesson.
 D('videoList').addEventListener('click',e=>{const a=e.target.closest('a');if(!a||!a.closest('.video-actions'))return;const v=CATALOG.find(x=>x.url===a.href);if(v&&parseVideo(v.url)&&a.textContent.includes('Відкрити')){e.preventDefault();openVideo(v.url,v.name)}},true);
-window.EP243={version:'24.3.1',lookup,glosses,openVideo,videoCards,updateV,videoState,translate,cleanupFlip};
+window.EP243={version:'26.0.0',lookup,glosses,openVideo,videoCards,updateV,videoState,translate,cleanupFlip,getActive:()=>active?{...active}:null,seekTo:s=>{if(player?.seekTo&&ready){player.seekTo(Number(s)||0,true);return true}return false}};
 // One canonical version displayed after all legacy modules run.
 const footer=document.querySelector('.app>footer');if(footer)footer.textContent='English Pocket 24.3.1 · A2+ → B1 · Твої дані залишаються на пристрої · Без платного AI API';
 })();

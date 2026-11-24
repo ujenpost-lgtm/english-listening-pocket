@@ -94,7 +94,7 @@ async function p20ReturnToBook(w){try{const loc=w.p20Location;const b=await dbGe
 const p20OldNewCandidates=newCandidates;
 newCandidates=function(){return p20OldNewCandidates().sort((a,b)=>(Number(b.p20Priority)||0)-(Number(a.p20Priority)||0))};
 const p20OldHighlights=highlightWords;
-highlightWords=function(){if(localStorage.getItem(P20.highlightKey)==='off')return;
+highlightWords=function(){if(EPStore.getItem(P20.highlightKey)==='off')return;
  const area=$('pageText'),phrases=p20Studied().map(w=>clean(w.text)).filter(t=>t.length>=3&&t.length<90).sort((a,b)=>b.length-a.length).slice(0,300);
  if(!phrases.length)return;
  const esc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -105,7 +105,7 @@ highlightWords=function(){if(localStorage.getItem(P20.highlightKey)==='off')retu
 const p20SavedTray=$('traySave').onclick;
 $('traySave').onclick=function(){const value=trayValue?.text,loc=book?{bookId:book.id,chapter,page,fraction:chapterPages<=1?0:page/(chapterPages-1)}:null;p20SavedTray();if(value&&loc){const w=wordMatch(value);if(w&&!w.p20Location){w.p20Location=loc;saveWords()}}};
 // Reader settings remain tucked away and do not add a top bar.
-const p20Toggle=p20E('button','btn alt small',localStorage.getItem(P20.highlightKey)==='off'?'○ Підсвічувати вивчені':'✓ Підсвічувати вивчені');p20Toggle.type='button';p20Toggle.onclick=()=>{const off=localStorage.getItem(P20.highlightKey)!=='off';localStorage.setItem(P20.highlightKey,off?'off':'on');p20Toggle.textContent=off?'○ Підсвічувати вивчені':'✓ Підсвічувати вивчені';refreshHighlights();};$('readerMore').querySelector('.row')?.append(p20Toggle);
+const p20Toggle=p20E('button','btn alt small',EPStore.getItem(P20.highlightKey)==='off'?'○ Підсвічувати вивчені':'✓ Підсвічувати вивчені');p20Toggle.type='button';p20Toggle.onclick=()=>{const off=EPStore.getItem(P20.highlightKey)!=='off';EPStore.setItem(P20.highlightKey,off?'off':'on');p20Toggle.textContent=off?'○ Підсвічувати вивчені':'✓ Підсвічувати вивчені';refreshHighlights();};$('readerMore').querySelector('.row')?.append(p20Toggle);
 // CANADA: replace the arbitrary phrase-matching generator with coherent authored conversations.
 // Every assessed learner phrase must be previously studied; prompts are written to fit answers.
 (function setupCanada20(){

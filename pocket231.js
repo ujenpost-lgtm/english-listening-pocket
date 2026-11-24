@@ -27,7 +27,7 @@
   if(recall.index>recall.queue.length||recall.index<0)recall=freshSession();
   putLS(RECALL_KEY,recall);return recall;
  }
- function clearSession(){recall=null;localStorage.removeItem(RECALL_KEY)}
+ function clearSession(){recall=null;EPStore.removeItem(RECALL_KEY)}
  function chooseCue(w,isRetry){
   const examples=ep203Contexts(w);
   if(!examples.length)return ep201Context(w);

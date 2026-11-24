@@ -44,12 +44,12 @@ $('ep181ResetAll').onclick=()=>{
  if(!confirm(`Скинути результати ${studied.length} карток? Усі вони знову стануть новими. Книги, переклади та тексти карток залишаться.`))return;
  if(!confirm('Підтверди скидання всього навчання. Рекомендуємо спершу зробити резервну копію.'))return;
  ep181ResetWords(studied);
- for(const key of [K.practiceLog,K.daily,LEVEL16_KEY,EP18.practiceKey,EP18.dialogueKey,'elp-17-daily-check'])localStorage.removeItem(key);
+ for(const key of [K.practiceLog,K.daily,LEVEL16_KEY,EP18.practiceKey,EP18.dialogueKey,'elp-17-daily-check'])EPStore.removeItem(key);
  $('settingsDialog').close();toast('Результати скинуто — можна вивчати заново');
 };
 // Blue-and-ink appearance; optional bright theme without an extra navigation tab.
-function ep181ThemeApply(){const v=localStorage.getItem(EP181.themeKey)==='light'?'light':'dark';document.documentElement.dataset.ep181Theme=v;$('ep181Theme').textContent=v==='light'?'☾ Темна тема':'☀ Світла тема';}
-$('ep181Theme').onclick=()=>{const next=document.documentElement.dataset.ep181Theme==='light'?'dark':'light';localStorage.setItem(EP181.themeKey,next);ep181ThemeApply();};
+function ep181ThemeApply(){const v=EPStore.getItem(EP181.themeKey)==='light'?'light':'dark';document.documentElement.dataset.ep181Theme=v;$('ep181Theme').textContent=v==='light'?'☾ Темна тема':'☀ Світла тема';}
+$('ep181Theme').onclick=()=>{const next=document.documentElement.dataset.ep181Theme==='light'?'dark':'light';EPStore.setItem(EP181.themeKey,next);ep181ThemeApply();};
 ep181ThemeApply();
 // Adaptive scenes: target prompts and every possible reply come ONLY from completed cards.
 const EP181_SCENARIOS=[
@@ -132,9 +132,9 @@ async function ep181FromNetwork(text,signal){const chunks=ep181Chunk(text),all=[
 function ep181CancelTranslation(){EP181.request++;if(EP181.abort){EP181.abort.abort();EP181.abort=null}if($('ep181Translate')){$('ep181Translate').disabled=false;$('ep181Translate').textContent='Перекласти'}}
 async function ep181Translate(force=false){if(!trayValue)return;const text=clean(trayValue.text);if(!text)return;
  const cached=ep181CacheGet(text);if(cached&&!force){$('trayMeaning').value=cached;$('trayStatus').textContent='Кешований переклад · можна редагувати';return}
- if(!localStorage.getItem(EP181.consentKey)){
+ if(!EPStore.getItem(EP181.consentKey)){
   if(!confirm('Для перекладу невідомих слів і речень їхній текст надсилатиметься до безплатного онлайн-сервісу MyMemory. Це потребує інтернету; доступність і точність не гарантуються. Увімкнути переклад у застосунку?'))return;
-  localStorage.setItem(EP181.consentKey,'yes');
+  EPStore.setItem(EP181.consentKey,'yes');
  }
  ep181CancelTranslation();const my=EP181.request,controller=new AbortController();EP181.abort=controller;
  $('ep181Translate').disabled=true;$('ep181Translate').textContent='Перекладаю…';$('trayStatus').textContent='Онлайн-переклад…';

@@ -8,7 +8,7 @@ const btn=(text,action,cls='btn alt small')=>{const b=el('button',cls,text);b.ty
 const norm=t=>String(t||'').normalize('NFKC').toLocaleLowerCase('en').replace(/[’‘]/g,"'").replace(/^[\s.,!?;:"“”()]+|[\s.,!?;:"“”()]+$/g,'').replace(/\s+/g,' ').trim();
 const trim=t=>String(t||'').replace(/\s+/g,' ').trim();
 const EP23={version:'23.0',loaded:false,entries:new Map(),forms:new Map(),senses:[],source:'',phrase:null};window.EP23=EP23;
-const DB_NAME='english-pocket-lexicon-23';
+const DB_NAME=EPProfiles.dbName('english-pocket-lexicon-23');
 function dictDB(){return new Promise((resolve,reject)=>{const req=indexedDB.open(DB_NAME,1);req.onupgradeneeded=()=>{if(!req.result.objectStoreNames.contains('datasets'))req.result.createObjectStore('datasets',{keyPath:'id'})};req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)});}
 async function dictOperation(mode,method,value){const db=await dictDB();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('datasets',mode),req=tx.objectStore('datasets')[method](value);req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);tx.onerror=()=>reject(tx.error)});}finally{db.close()}}
 function installMemory(payload){EP23.entries=new Map(payload.entries);EP23.forms=new Map(payload.forms);EP23.loaded=true;EP23.source=payload.source||'en-uk StarDict';}
