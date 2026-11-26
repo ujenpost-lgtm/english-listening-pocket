@@ -1,13 +1,13 @@
 {
-  "name": "English Pocket 26.1.0 — A2+ → B1",
+  "name": "English Pocket 27.0.0 — Warm Paper · A2+ → B1",
   "short_name": "English Pocket",
-  "description": "Персональна щоденна практика, власні історії, EPUB, офлайн-словник, аудіочитання та відеоблокнот. Без платного AI API; додатковий онлайн-переклад за згодою.",
+  "description": "Персональна англійська A2+ → B1: Living Stories, Canada Quest, Pocket Walk, відео, книги та офлайн-словник. Локальні дані.",
   "lang": "uk",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#081525",
-  "theme_color": "#112740",
+  "background_color": "#f4f1e9",
+  "theme_color": "#286d77",
   "icons": [
     {
       "src": "./icon-192.png",
