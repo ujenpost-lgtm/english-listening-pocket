@@ -1,3 +1,17 @@
+# English Pocket 26.1.0 — інструкція
+
+**Перед оновленням:** ⚙ → Data Vault → Повна копія. Збережи файл окремо.
+
+1. Розпакуй ZIP повністю.
+2. GitHub Desktop → Repository → Show in Explorer.
+3. Скопіюй файли в корінь репозиторію `english-listening-pocket` із заміною старих. Не видаляй `.git`.
+4. Commit to main → Push origin.
+5. Перевір `/version.txt` (English Pocket 26.1.0), а потім **Читати → UTalk Navi**.
+
+Бот відкривається у Telegram; матеріали додаються лише вручну. Дивись README_26_1.md.
+
+---
+
 # English Pocket 26.0.0 — оновлення та нові функції
 
 ## 1. Перед оновленням
