@@ -21,8 +21,10 @@
     const s=state.current?.text;if(!s)return;
     try{if(!navigator.clipboard?.writeText)throw Error('copy unavailable');await navigator.clipboard.writeText(s);toast('Скопійовано')}catch{toast('Копіювання недоступне в цьому браузері')}
   });
-  modes.append(wordButton,phraseButton,sentenceButton,copyButton);
-  tray.querySelector('.tray-heading')?.after(modes);
+  modes.append(wordButton,phraseButton,sentenceButton);const tools=element('div','ep28-range-tools');
+  const left=button('‹ + слово',()=>expand(-1)),right=button('+ слово ›',()=>expand(1));
+  tools.append(left,right);const extra=element('details','ep28-translate-more');extra.append(element('summary','','Ще'),copyButton);tray.querySelector('.tray-actions')?.append(extra);const memory=[...tray.querySelectorAll('button')].find(b=>b.textContent.includes('Запам’ятати переклад'));if(memory)extra.append(memory);
+  tray.querySelector('.tray-heading')?.after(modes,tools);
   const prompt=element('div','ep244-pick-banner');prompt.hidden=true;
   const promptText=element('span','', 'Торкнися останнього слова фрази');
   const cancelButton=button('Скасувати',()=>cancelPhrase());
@@ -100,6 +102,7 @@
     }
   }
   function activeMode(mode){
+    tools.hidden=mode==='sentence'||!mode;
     for(const [button,key] of [[wordButton,'word'],[phraseButton,'phrase'],[sentenceButton,'sentence']]){
       button.classList.toggle('ep244-mode-active',key===mode);
       button.setAttribute('aria-pressed',String(key===mode));
@@ -112,6 +115,7 @@
     readerLookup(sel.text,context||sentenceFrom({p:sel.p,text:wordNodes(sel.p).text,start:sel.start,end:sel.end})?.text||'');
     activeMode(sel.mode);
   }
+  function expand(dir){const sel=state.current;if(!sel)return;const {text}=wordNodes(sel.p);const ts=[...text.matchAll(/[\p{L}\p{N}]+(?:['’ʼ-][\p{L}\p{N}]+)*/gu)];let start=sel.start,end=sel.end;if(dir<0){const m=ts.filter(x=>x.index+x[0].length<=start).at(-1);if(!m)return;start=m.index;}else{const m=ts.find(x=>x.index>=end);if(!m)return;end=m.index+m[0].length;}showSelection(makeSelection(sel.p,start,end,'phrase'));}
   function selectWord(){const hit=state.anchor;if(!hit)return;
     showSelection(makeSelection(hit.p,hit.start,hit.end,'word'));
   }
