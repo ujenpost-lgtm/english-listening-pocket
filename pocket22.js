@@ -245,5 +245,5 @@ ep21OpenChapterReview=function(){originalChapterReview();if(!book)return;const p
 // 13. Backup bridge: the existing full backup exports all elp-* keys, including
 // these new fields. Preserve fresh content after importing a backup.
 q('backToLibrary')?.addEventListener('click',clearSpeechGlow);
-EP22.dictionaryLookup=offlineLookup;EP22.voiceChoice=preferredVoice;EP22.voiceScore=maleScore;
+EP22.videoExercise=ep22VideoExercise;EP22.dictionaryLookup=offlineLookup;EP22.voiceChoice=preferredVoice;EP22.voiceScore=maleScore;
 })();
